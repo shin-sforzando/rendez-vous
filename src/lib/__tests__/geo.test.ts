@@ -90,6 +90,15 @@ describe('geometricMedian', () => {
     expect(result.lng).toBeLessThan(139.67)
   })
 
+  it('should return best estimate when max iterations is reached', () => {
+    const points = [TOKYO, OSAKA, NAGOYA]
+    // With 0 iterations, should return the initial centroid estimate
+    const result = geometricMedian(points, { maxIterations: 0 })
+    const c = centroid(points)
+    expect(result.lat).toBeCloseTo(c.lat, 5)
+    expect(result.lng).toBeCloseTo(c.lng, 5)
+  })
+
   it('should throw for empty input', () => {
     expect(() => geometricMedian([])).toThrow()
   })
