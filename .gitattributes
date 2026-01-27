@@ -1,0 +1,7 @@
+# git-secret encrypted files
+*.secret binary
+*.secret diff=secret
+
+# Normalize line endings
+* text=auto eol=lf
+*.sh text eol=lf
