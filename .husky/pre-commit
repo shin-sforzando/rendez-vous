@@ -29,30 +29,20 @@ else
   echo "  ⚠️  git-secret not found, skipping encryption"
 fi
 
-# 2. Tests (only if test setup exists)
+# 2. Tests (if test script exists)
 # pretest hook automatically runs Biome checks
-if [ -f "vite.config.ts" ] && grep -q "test:" vite.config.ts; then
-  echo "🧪 Running tests (with pretest checks)..."
-  if ! npm test; then
-    echo "❌ Tests failed. Please fix the tests and try again."
-    exit 1
-  fi
-  echo "  ✓ Tests passed"
-else
-  echo "⏭️  Skipping tests (test configuration not found)"
+echo "🧪 Running tests (with pretest checks)..."
+if ! npm run test --if-present; then
+  echo "❌ Tests failed. Please fix the tests and try again."
+  exit 1
 fi
 
-# 3. Build verification (only if vite.config.ts exists)
+# 3. Build verification (if build script exists)
 # prebuild hook automatically runs Biome checks and TypeScript type check
-if [ -f "vite.config.ts" ]; then
-  echo "🏗️  Running build verification (with prebuild checks)..."
-  if ! npm run build; then
-    echo "❌ Build failed. Please fix the errors and try again."
-    exit 1
-  fi
-  echo "  ✓ Build verification passed"
-else
-  echo "⏭️  Skipping build verification (vite.config.ts not found)"
+echo "🏗️  Running build verification (with prebuild checks)..."
+if ! npm run build --if-present; then
+  echo "❌ Build failed. Please fix the errors and try again."
+  exit 1
 fi
 
 echo "✅ All pre-commit checks passed!"
