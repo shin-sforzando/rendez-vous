@@ -127,13 +127,16 @@ sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,visualstudiocode,data,react
 
+# TypeScript
+*.tsbuildinfo
+
 # Vite
 dist
 dist-ssr
 *.local
 
-# TypeScript
-*.tsbuildinfo
+# Vitest
+coverage/
 
 # Environment variables
 .env

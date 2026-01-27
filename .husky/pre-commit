@@ -29,36 +29,20 @@ else
   echo "  ⚠️  git-secret not found, skipping encryption"
 fi
 
-# 2. Linting and Formatting
-echo "📝 Running Biome checks..."
-if ! npm run check; then
-  echo "❌ Biome check failed. Please fix the errors and try again."
+# 2. Tests (if test script exists)
+# pretest hook automatically runs Biome checks
+echo "🧪 Running tests (with pretest checks)..."
+if ! npm run test --if-present; then
+  echo "❌ Tests failed. Please fix the tests and try again."
   exit 1
 fi
-echo "  ✓ Biome check passed"
 
-# 3. Type checking (only if tsconfig.json exists)
-if [ -f "tsconfig.json" ]; then
-  echo "🔍 Running TypeScript type check..."
-  if ! npm run typecheck; then
-    echo "❌ Type check failed. Please fix the errors and try again."
-    exit 1
-  fi
-  echo "  ✓ Type check passed"
-else
-  echo "⏭️  Skipping TypeScript type check (tsconfig.json not found)"
-fi
-
-# 4. Tests (only if test setup exists)
-if [ -f "vitest.config.ts" ] || [ -d "src/test" ]; then
-  echo "🧪 Running tests..."
-  if ! npm run test:run; then
-    echo "❌ Tests failed. Please fix the tests and try again."
-    exit 1
-  fi
-  echo "  ✓ Tests passed"
-else
-  echo "⏭️  Skipping tests (test configuration not found)"
+# 3. Build verification (if build script exists)
+# prebuild hook automatically runs Biome checks and TypeScript type check
+echo "🏗️  Running build verification (with prebuild checks)..."
+if ! npm run build --if-present; then
+  echo "❌ Build failed. Please fix the errors and try again."
+  exit 1
 fi
 
 echo "✅ All pre-commit checks passed!"
