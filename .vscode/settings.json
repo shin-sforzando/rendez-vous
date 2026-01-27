@@ -13,6 +13,7 @@
 		"ionide",
 		"izakaya",
 		"msix",
+		"prebuild",
 		"rendez",
 		"romaji",
 		"shibuya",
@@ -23,6 +24,7 @@
 		"SUPABASE",
 		"timemachine",
 		"VITE",
+		"Vitest",
 		"vous",
 		"Weiszfeld"
 	]
