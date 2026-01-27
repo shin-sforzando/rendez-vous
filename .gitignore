@@ -126,3 +126,23 @@ sketch
 *.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,visualstudiocode,data,react
+
+# git-secret
+.gitsecret/keys/random_seed
+!*.secret
+
+# Vite
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# TypeScript
+*.tsbuildinfo
+
+# direnv
+.envrc
