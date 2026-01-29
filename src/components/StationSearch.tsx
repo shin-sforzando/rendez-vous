@@ -14,6 +14,7 @@ function StationSearch({ onSelect, disabled = false }: StationSearchProps) {
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
+    if (disabled) return
     // TODO: Implement station search via Supabase (Phase 4, Issue #9)
     // For now, this is a UI shell that will be connected later
     if (query.trim()) {

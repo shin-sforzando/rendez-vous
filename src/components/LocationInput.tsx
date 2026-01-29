@@ -22,6 +22,7 @@ function LocationInput({ locations, onAdd, onRemove }: LocationInputProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!canAdd) return
 
     const parsedLat = Number.parseFloat(lat)
     const parsedLng = Number.parseFloat(lng)

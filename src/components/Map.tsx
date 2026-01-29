@@ -1,4 +1,5 @@
 import { divIcon, type LatLngExpression } from 'leaflet'
+import { useEffect } from 'react'
 import type { LatLng, Location } from '@/types'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
@@ -11,10 +12,12 @@ const DEFAULT_ZOOM = 6
 function MapBounds({ positions }: { positions: LatLng[] }) {
   const map = useMap()
 
-  if (positions.length > 0) {
-    const bounds = positions.map((p): LatLngExpression => [p.lat, p.lng])
-    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
-  }
+  useEffect(() => {
+    if (positions.length > 0) {
+      const bounds = positions.map((p): LatLngExpression => [p.lat, p.lng])
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
+    }
+  }, [map, positions])
 
   return null
 }
