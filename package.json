@@ -20,7 +20,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.93.1",
+    "@supabase/supabase-js": "^2.93.3",
     "leaflet": "^1.9.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -39,7 +39,7 @@
     "@vitest/ui": "^4.0.18",
     "autoprefixer": "^10.4.23",
     "daisyui": "^5.5.14",
-    "happy-dom": "^20.3.9",
+    "happy-dom": "^20.4.0",
     "husky": "^9.1.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
