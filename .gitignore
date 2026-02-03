@@ -146,6 +146,9 @@ coverage/
 # direnv
 .envrc
 
+# GeoJSON data files for station import
+data/
+
 # git-secret
 .gitsecret/keys/random_seed
 !*.secret

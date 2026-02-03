@@ -10,6 +10,7 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
     - [Updating Secrets](#updating-secrets)
   - [Pre-commit Hooks](#pre-commit-hooks)
   - [Development Commands](#development-commands)
+- [Station Data Import](#station-data-import)
 
 ## Development Setup
 
@@ -46,6 +47,14 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
    ```
 
 ### Environment Variables
+
+The following environment variables are required in `.env.local`:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`) |
+| `SUPABASE_SECRET_KEY` | Supabase secret key (`sb_secret_...`, for station data import only) |
 
 This project uses **git-secret** to manage sensitive information.
 
@@ -117,3 +126,33 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+## Station Data Import
+
+Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) into Supabase.
+
+### Setup
+
+1. Download the GeoJSON data from the link above (`N02-24_GML.zip`)
+2. Extract the ZIP and place it under `data/`:
+
+   ```
+   data/
+     N02-24_GML/
+       UTF-8/
+         N02-24_Station.geojson
+   ```
+
+3. Ensure `SUPABASE_SECRET_KEY` is set in `.env.local` (create a secret key in Supabase Dashboard -> Settings -> API)
+
+### Usage
+
+```bash
+# Dry run (parse and validate without inserting)
+npm run import:stations -- data/N02-24_GML/UTF-8/N02-24_Station.geojson --dry-run
+
+# Import into Supabase
+npm run import:stations -- data/N02-24_GML/UTF-8/N02-24_Station.geojson
+```
+
+The script is idempotent: re-running it will skip stations that already exist in the database.
