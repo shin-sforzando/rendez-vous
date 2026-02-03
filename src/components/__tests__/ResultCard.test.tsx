@@ -1,71 +1,148 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
-import type { MeetingPointResult } from '@/types'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type { Location, MeetingPointResult } from '@/types'
 import ResultCard from '../ResultCard'
+
+const LOCATIONS: Location[] = [
+  { name: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+  { name: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+  { name: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
+]
 
 const MOCK_RESULT: MeetingPointResult = {
   centroid: { lat: 35.1838, lng: 137.3531 },
   geometricMedian: { lat: 35.0, lng: 137.0 },
-  locations: [
-    { name: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
-    { name: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
-    { name: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
-  ],
+  locations: LOCATIONS,
 }
 
 describe('ResultCard', () => {
-  it('should render the component', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByTestId('result-card')).toBeInTheDocument()
+  describe('empty state', () => {
+    it('should render the component with no locations', () => {
+      render(<ResultCard locations={[]} result={null} />)
+      expect(screen.getByTestId('result-card')).toBeInTheDocument()
+    })
+
+    it('should show empty state message when no locations', () => {
+      render(<ResultCard locations={[]} result={null} />)
+      expect(screen.getByText('地点を追加すると、ここに一覧が表示されます')).toBeInTheDocument()
+    })
+
+    it('should show location count in heading', () => {
+      render(<ResultCard locations={[]} result={null} />)
+      expect(screen.getByText('登録済み地点（0）')).toBeInTheDocument()
+    })
   })
 
-  it('should display centroid coordinates', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByText('重心 (Centroid)')).toBeInTheDocument()
-    expect(screen.getByText('35.183800, 137.353100')).toBeInTheDocument()
+  describe('with locations but no result (< 2 locations)', () => {
+    it('should show location count heading', () => {
+      render(<ResultCard locations={[LOCATIONS[0]]} result={null} />)
+      expect(screen.getByText('登録済み地点（1）')).toBeInTheDocument()
+    })
+
+    it('should display the location name', () => {
+      render(<ResultCard locations={[LOCATIONS[0]]} result={null} />)
+      expect(screen.getByText('東京')).toBeInTheDocument()
+    })
+
+    it('should not show distance info without result', () => {
+      render(<ResultCard locations={[LOCATIONS[0]]} result={null} />)
+      expect(screen.queryByText(/→ C:/)).not.toBeInTheDocument()
+    })
   })
 
-  it('should display geometric median coordinates', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByText('幾何中央値 (Geometric Median)')).toBeInTheDocument()
-    expect(screen.getByText('35.000000, 137.000000')).toBeInTheDocument()
+  describe('with result (>= 2 locations)', () => {
+    it('should show calculation result heading', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('計算結果')).toBeInTheDocument()
+    })
+
+    it('should display centroid card with label and coordinates', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('中間地点')).toBeInTheDocument()
+      expect(screen.getByText('35.183800, 137.353100')).toBeInTheDocument()
+    })
+
+    it('should display geometric median card with label and coordinates', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('最適地点')).toBeInTheDocument()
+      expect(screen.getByText('35.000000, 137.000000')).toBeInTheDocument()
+    })
+
+    it('should display all location names', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('東京')).toBeInTheDocument()
+      expect(screen.getByText('大阪')).toBeInTheDocument()
+      expect(screen.getByText('名古屋')).toBeInTheDocument()
+    })
+
+    it('should display distance values in km', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      const kmTexts = screen.getAllByText(/km/)
+      // 2 total distances (centroid + median cards) + distances per location
+      expect(kmTexts.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('should show per-location distance to C and M', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      const cDistances = screen.getAllByText(/→ C:/)
+      const mDistances = screen.getAllByText(/→ M:/)
+      expect(cDistances).toHaveLength(3)
+      expect(mDistances).toHaveLength(3)
+    })
+
+    it('should display numbered badges for each location', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('1')).toBeInTheDocument()
+      expect(screen.getByText('2')).toBeInTheDocument()
+      expect(screen.getByText('3')).toBeInTheDocument()
+    })
+
+    it('should display C and M badges in summary cards', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByText('C')).toBeInTheDocument()
+      expect(screen.getByText('M')).toBeInTheDocument()
+    })
   })
 
-  it('should display all location names in the distance table', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByText('東京')).toBeInTheDocument()
-    expect(screen.getByText('大阪')).toBeInTheDocument()
-    expect(screen.getByText('名古屋')).toBeInTheDocument()
+  describe('info tips', () => {
+    it('should show info tip for centroid', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByLabelText('全員の座標の平均')).toBeInTheDocument()
+    })
+
+    it('should show info tip for geometric median', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.getByLabelText('全員の移動距離の合計が最小となる地点')).toBeInTheDocument()
+    })
   })
 
-  it('should display distance values in km', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    // Each location should have distance entries (table cells with km values)
-    const cells = screen.getAllByText(/km/)
-    // At least 2 totals + distances per location
-    expect(cells.length).toBeGreaterThanOrEqual(2)
+  describe('removing locations', () => {
+    it('should call onRemove when delete button is clicked', () => {
+      const handleRemove = vi.fn()
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} onRemove={handleRemove} />)
+
+      fireEvent.click(screen.getByLabelText('東京を削除'))
+      expect(handleRemove).toHaveBeenCalledWith(0)
+    })
+
+    it('should not show delete buttons when onRemove is not provided', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.queryByLabelText('東京を削除')).not.toBeInTheDocument()
+    })
   })
 
-  it('should display the distance table headers', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByText('地点')).toBeInTheDocument()
-    expect(screen.getByText('→ 重心')).toBeInTheDocument()
-    expect(screen.getByText('→ 幾何中央値')).toBeInTheDocument()
-  })
-
-  it('should display total distance row', () => {
-    render(<ResultCard result={MOCK_RESULT} />)
-    expect(screen.getByText('合計')).toBeInTheDocument()
-  })
-
-  it('should format small distances in meters', () => {
-    const closeResult: MeetingPointResult = {
-      centroid: { lat: 35.6762, lng: 139.6503 },
-      geometricMedian: { lat: 35.6762, lng: 139.6503 },
-      locations: [{ name: '地点A', latlng: { lat: 35.6762, lng: 139.6503 } }],
-    }
-    render(<ResultCard result={closeResult} />)
-    // Distance should be 0 m when point coincides with centroid/median
-    expect(screen.getAllByText('0 m').length).toBeGreaterThanOrEqual(1)
+  describe('distance formatting', () => {
+    it('should format small distances in meters', () => {
+      const closeLocations: Location[] = [
+        { name: '地点A', latlng: { lat: 35.6762, lng: 139.6503 } },
+      ]
+      const closeResult: MeetingPointResult = {
+        centroid: { lat: 35.6762, lng: 139.6503 },
+        geometricMedian: { lat: 35.6762, lng: 139.6503 },
+        locations: closeLocations,
+      }
+      render(<ResultCard locations={closeLocations} result={closeResult} />)
+      expect(screen.getAllByText('0 m').length).toBeGreaterThanOrEqual(1)
+    })
   })
 })
