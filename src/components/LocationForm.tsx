@@ -113,7 +113,7 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
           )}
 
           {/* Station search results */}
-          {stationQuery.trim() && (
+          {stationQuery.trim() && !error && (
             <div className="max-h-48 overflow-y-auto">
               {isLoading ? (
                 <output className="flex justify-center py-3" aria-label="検索中">

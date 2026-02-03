@@ -30,8 +30,7 @@ function App() {
   const isMaxReached = locations.length >= MAX_LOCATIONS
 
   function handleAddLocation(location: Location) {
-    if (isMaxReached) return
-    setLocations((prev) => [...prev, location])
+    setLocations((prev) => (prev.length >= MAX_LOCATIONS ? prev : [...prev, location]))
   }
 
   function handleRemoveLocation(index: number) {
