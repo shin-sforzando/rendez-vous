@@ -14,6 +14,8 @@ export interface Location {
   latlng: LatLng
 }
 
+export type { Database, Station, StationWithCoords } from './database'
+
 /** Result of meeting point calculation */
 export interface MeetingPointResult {
   /** Centroid (arithmetic mean) of all locations */
