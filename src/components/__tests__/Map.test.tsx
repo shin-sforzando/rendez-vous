@@ -18,6 +18,9 @@ vi.mock('react-leaflet', () => ({
     icon?: unknown
   }) => <div data-testid="marker">{children}</div>,
   Popup: ({ children }: { children: React.ReactNode }) => <div data-testid="popup">{children}</div>,
+  Polygon: ({ pathOptions }: { positions: unknown[]; pathOptions: Record<string, unknown> }) => (
+    <div data-testid="polygon" data-color={pathOptions.color} />
+  ),
   useMap: () => ({
     fitBounds: vi.fn(),
   }),
@@ -25,6 +28,7 @@ vi.mock('react-leaflet', () => ({
 
 vi.mock('leaflet', () => ({
   divIcon: vi.fn(() => ({})),
+  latLngBounds: vi.fn(() => ({})),
 }))
 
 describe('Map', () => {
@@ -51,14 +55,16 @@ describe('Map', () => {
     expect(screen.getByText('大阪')).toBeInTheDocument()
   })
 
-  it('should render centroid marker when provided', () => {
+  it('should render centroid marker with explanation popup', () => {
     render(<MapView locations={[]} centroid={{ lat: 35.0, lng: 137.0 }} />)
-    expect(screen.getByText('重心 (Centroid)')).toBeInTheDocument()
+    expect(screen.getByText('中間地点')).toBeInTheDocument()
+    expect(screen.getByText('全員の座標の平均')).toBeInTheDocument()
   })
 
-  it('should render geometric median marker when provided', () => {
+  it('should render geometric median marker with explanation popup', () => {
     render(<MapView locations={[]} geometricMedian={{ lat: 35.0, lng: 137.0 }} />)
-    expect(screen.getByText('幾何中央値 (Geometric Median)')).toBeInTheDocument()
+    expect(screen.getByText('最適地点')).toBeInTheDocument()
+    expect(screen.getByText('全員の移動距離の合計が最小となる地点')).toBeInTheDocument()
   })
 
   it('should render all marker types together', () => {
@@ -74,5 +80,24 @@ describe('Map', () => {
     const markers = screen.getAllByTestId('marker')
     // 1 location + 1 centroid + 1 geometric median = 3
     expect(markers).toHaveLength(3)
+  })
+
+  it('should not render convex hull polygon with fewer than 3 locations', () => {
+    const locations = [
+      { name: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+      { name: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+    ]
+    render(<MapView locations={locations} />)
+    expect(screen.queryByTestId('polygon')).not.toBeInTheDocument()
+  })
+
+  it('should render convex hull polygon with 3 or more locations', () => {
+    const locations = [
+      { name: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+      { name: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+      { name: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
+    ]
+    render(<MapView locations={locations} />)
+    expect(screen.getByTestId('polygon')).toBeInTheDocument()
   })
 })

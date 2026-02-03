@@ -1,4 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui" {
   exclude: properties;
+  themes:
+    light --default,
+    dark --prefersdark,
+    cmyk;
+}
+
+/* Desaturate map tiles so markers and polygons stand out */
+.leaflet-tile-pane {
+  filter: saturate(0.3);
 }

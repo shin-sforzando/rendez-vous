@@ -24,6 +24,8 @@
 - LinterやFormatterの警告を無視してはいけない
   - LinterやFormatterの警告がある限りコミットは失敗するよう設定されている
   - `biome-ignore` 等で無視するのも本質的な解決ではないので禁止
+- コマンド実行は必ず `package.json` の scripts を使え（`npm run check`, `npm run test` 等）
+  - `pretest` や `prebuild` 等のライフサイクルスクリプトも活用されているため、`npm run` 経由でないと意図した動作にならない
 - 機能追加に伴って、ユニットテスト、統合テスト、E2Eテストを拡充せよ
   - テストが全て合格し、カバレッジが十分でない限りコミットは失敗するよう設定されている
 

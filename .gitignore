@@ -138,6 +138,9 @@ dist-ssr
 # Vitest
 coverage/
 
+# Playwright
+.playwright-mcp/
+
 # Environment variables
 .env
 .env.local
