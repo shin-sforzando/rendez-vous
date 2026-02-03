@@ -55,6 +55,7 @@ export function useStationSearch(
     if (!debouncedQuery.trim()) {
       setStations([])
       setError(null)
+      setIsLoading(false)
       return
     }
 
@@ -77,6 +78,15 @@ export function useStationSearch(
         } else {
           setStations((data as StationWithCoords[]) ?? [])
         }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        setError(message)
+        setStations([])
+      })
+      .finally(() => {
+        if (cancelled) return
         setIsLoading(false)
       })
 
