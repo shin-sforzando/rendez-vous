@@ -11,6 +11,8 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
   - [Pre-commit Hooks](#pre-commit-hooks)
   - [Development Commands](#development-commands)
 - [Station Data Import](#station-data-import)
+  - [Setup](#setup)
+  - [Usage](#usage)
 
 ## Development Setup
 
@@ -51,7 +53,7 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
 The following environment variables are required in `.env.local`:
 
 | Variable | Description |
-|----------|-------------|
+| -------- | ----------- |
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`) |
 | `SUPABASE_SECRET_KEY` | Supabase secret key (`sb_secret_...`, for station data import only) |
@@ -136,7 +138,7 @@ Import railway station data from [National Land Numerical Information (国土数
 1. Download the GeoJSON data from the link above (`N02-24_GML.zip`)
 2. Extract the ZIP and place it under `data/`:
 
-   ```
+   ```plain
    data/
      N02-24_GML/
        UTF-8/
