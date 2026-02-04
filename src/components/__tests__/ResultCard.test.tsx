@@ -4,9 +4,9 @@ import type { Location, MeetingPointResult } from '@/types'
 import ResultCard from '../ResultCard'
 
 const LOCATIONS: Location[] = [
-  { name: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
-  { name: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
-  { name: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
+  { label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+  { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+  { label: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
 ]
 
 const MOCK_RESULT: MeetingPointResult = {
@@ -134,7 +134,7 @@ describe('ResultCard', () => {
   describe('distance formatting', () => {
     it('should format small distances in meters', () => {
       const closeLocations: Location[] = [
-        { name: '地点A', latlng: { lat: 35.6762, lng: 139.6503 } },
+        { label: '地点A', latlng: { lat: 35.6762, lng: 139.6503 } },
       ]
       const closeResult: MeetingPointResult = {
         centroid: { lat: 35.6762, lng: 139.6503 },

@@ -51,7 +51,7 @@ describe('LocationForm', () => {
       fireEvent.click(screen.getByText('追加'))
 
       expect(onAdd).toHaveBeenCalledWith({
-        name: '自宅',
+        label: '自宅',
         latlng: { lat: 35.6812, lng: 139.7671 },
       })
     })
@@ -64,7 +64,7 @@ describe('LocationForm', () => {
       fireEvent.click(screen.getByText('追加'))
 
       expect(onAdd).toHaveBeenCalledWith({
-        name: '35.6812, 139.7671',
+        label: '35.6812, 139.7671',
         latlng: { lat: 35.6812, lng: 139.7671 },
       })
     })
@@ -189,7 +189,7 @@ describe('LocationForm', () => {
       fireEvent.click(screen.getByText('追加'))
 
       expect(onAdd).toHaveBeenCalledWith({
-        name: '東京',
+        label: '東京',
         latlng: { lat: 35.6812, lng: 139.7671 },
       })
     })
@@ -215,7 +215,7 @@ describe('LocationForm', () => {
       fireEvent.click(screen.getByText('追加'))
 
       expect(onAdd).toHaveBeenCalledWith({
-        name: '鈴木（東京）',
+        label: '鈴木（東京）',
         latlng: { lat: 35.6812, lng: 139.7671 },
       })
     })

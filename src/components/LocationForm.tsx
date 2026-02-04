@@ -40,16 +40,18 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
     if (Number.isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) return
     if (Number.isNaN(parsedLng) || parsedLng < -180 || parsedLng > 180) return
 
-    // Build display name from label and/or station name
-    let name = ''
+    // Build display label from user input and/or station name
+    let displayLabel = ''
     const trimmedLabel = label.trim()
     if (selectedStation) {
-      name = trimmedLabel ? `${trimmedLabel}（${selectedStation.name}）` : selectedStation.name
+      displayLabel = trimmedLabel
+        ? `${trimmedLabel}（${selectedStation.name}）`
+        : selectedStation.name
     } else {
-      name = trimmedLabel || `${parsedLat.toFixed(4)}, ${parsedLng.toFixed(4)}`
+      displayLabel = trimmedLabel || `${parsedLat.toFixed(4)}, ${parsedLng.toFixed(4)}`
     }
 
-    onAdd({ name, latlng: { lat: parsedLat, lng: parsedLng } })
+    onAdd({ label: displayLabel, latlng: { lat: parsedLat, lng: parsedLng } })
 
     setLabel('')
     setStationQuery('')
