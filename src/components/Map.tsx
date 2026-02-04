@@ -152,7 +152,7 @@ function MapView({ locations, centroid, geometricMedian }: MapProps) {
             <Popup>
               <strong>中間地点</strong>
               <br />
-              全員の座標の平均
+              すべての座標の平均値。重心（Centroid）とも呼ばれる。
             </Popup>
           </Marker>
         )}
@@ -165,7 +165,7 @@ function MapView({ locations, centroid, geometricMedian }: MapProps) {
             <Popup>
               <strong>最適地点</strong>
               <br />
-              全員の移動距離の合計が最小となる地点
+              各点からの直線距離の和が最小となる地点。幾何中央値、ユークリッド最小和点、トリチェリ点とも呼ばれる。
             </Popup>
           </Marker>
         )}

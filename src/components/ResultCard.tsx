@@ -1,5 +1,5 @@
 import { haversineDistance } from '@/lib/haversine'
-import type { Location, MeetingPointResult } from '@/types'
+import type { Location, MeetingPointResult, NearbyStation } from '@/types'
 
 interface ResultCardProps {
   /** All registered locations */
@@ -8,6 +8,12 @@ interface ResultCardProps {
   result: MeetingPointResult | null
   /** Callback when a location is removed */
   onRemove?: (index: number) => void
+  /** Nearby stations for the centroid */
+  centroidNearbyStations?: NearbyStation[]
+  /** Nearby stations for the geometric median */
+  medianNearbyStations?: NearbyStation[]
+  /** Whether nearby station data is loading */
+  isLoadingNearbyStations?: boolean
 }
 
 /** Format distance in km for display */
@@ -29,7 +35,76 @@ function InfoTip({ tip }: { tip: string }) {
   )
 }
 
-function ResultCard({ locations, result, onRemove }: ResultCardProps) {
+/** Group flat station rows by name, preserving order of first appearance */
+function groupStationsByName(
+  stations: NearbyStation[]
+): { name: string; distance_meters: number; lines: string[] }[] {
+  const groups = new Map<string, { distance_meters: number; lines: string[] }>()
+  for (const s of stations) {
+    const existing = groups.get(s.name)
+    if (existing) {
+      if (s.line_name) existing.lines.push(s.line_name)
+    } else {
+      groups.set(s.name, {
+        distance_meters: s.distance_meters,
+        lines: s.line_name ? [s.line_name] : [],
+      })
+    }
+  }
+  return Array.from(groups, ([name, data]) => ({ name, ...data }))
+}
+
+/** Nearby station list displayed within C/M cards */
+function NearbyStationList({
+  stations,
+  isLoading,
+  testId,
+}: {
+  stations: NearbyStation[]
+  isLoading: boolean
+  testId: string
+}) {
+  const grouped = groupStationsByName(stations)
+
+  return (
+    <div data-testid={testId} className="mt-2 border-t border-base-300 pt-2">
+      <p className="text-xs font-semibold mb-1">最寄り駅</p>
+      {isLoading ? (
+        <p className="text-xs text-base-content/50">最寄り駅を検索中...</p>
+      ) : grouped.length === 0 ? (
+        <p className="text-xs text-base-content/50">駅が見つかりませんでした</p>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {grouped.map((group, i) => (
+            <li key={group.name}>
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="badge badge-outline badge-xs shrink-0">{i + 1}</span>
+                <span className="font-medium">{group.name}</span>
+                <span className="ml-auto shrink-0 tabular-nums">
+                  {formatDistance(group.distance_meters / 1000)}
+                </span>
+              </div>
+              {group.lines.length > 0 && (
+                <p className="text-[11px] text-base-content/50 ml-5 mt-0.5 leading-relaxed">
+                  {group.lines.join(' / ')}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function ResultCard({
+  locations,
+  result,
+  onRemove,
+  centroidNearbyStations,
+  medianNearbyStations,
+  isLoadingNearbyStations,
+}: ResultCardProps) {
   const { centroid, geometricMedian } = result ?? {}
 
   const centroidTotalDist =
@@ -69,7 +144,7 @@ function ResultCard({ locations, result, onRemove }: ResultCardProps) {
                   <span className="badge badge-warning">C</span>
                   <h3 className="font-semibold">
                     中間地点
-                    <InfoTip tip="全員の座標の平均" />
+                    <InfoTip tip="すべての座標の平均値。重心（Centroid）とも呼ばれる。" />
                   </h3>
                 </div>
                 <p className="text-sm font-mono">
@@ -78,6 +153,13 @@ function ResultCard({ locations, result, onRemove }: ResultCardProps) {
                 <p className="text-sm mt-1">
                   全員の合計距離: <strong>{formatDistance(centroidTotalDist)}</strong>
                 </p>
+                {centroidNearbyStations && (
+                  <NearbyStationList
+                    stations={centroidNearbyStations}
+                    isLoading={isLoadingNearbyStations ?? false}
+                    testId="nearby-stations-centroid"
+                  />
+                )}
               </div>
 
               {/* Geometric Median */}
@@ -86,7 +168,7 @@ function ResultCard({ locations, result, onRemove }: ResultCardProps) {
                   <span className="badge badge-error">M</span>
                   <h3 className="font-semibold">
                     最適地点
-                    <InfoTip tip="全員の移動距離の合計が最小となる地点" />
+                    <InfoTip tip="各点からの直線距離の和が最小となる地点。幾何中央値、ユークリッド最小和点、トリチェリ点とも呼ばれる。" />
                   </h3>
                 </div>
                 <p className="text-sm font-mono">
@@ -95,6 +177,13 @@ function ResultCard({ locations, result, onRemove }: ResultCardProps) {
                 <p className="text-sm mt-1">
                   全員の合計距離: <strong>{formatDistance(medianTotalDist)}</strong>
                 </p>
+                {medianNearbyStations && (
+                  <NearbyStationList
+                    stations={medianNearbyStations}
+                    isLoading={isLoadingNearbyStations ?? false}
+                    testId="nearby-stations-median"
+                  />
+                )}
               </div>
             </div>
           )}

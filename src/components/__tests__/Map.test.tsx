@@ -58,13 +58,19 @@ describe('Map', () => {
   it('should render centroid marker with explanation popup', () => {
     render(<MapView locations={[]} centroid={{ lat: 35.0, lng: 137.0 }} />)
     expect(screen.getByText('中間地点')).toBeInTheDocument()
-    expect(screen.getByText('全員の座標の平均')).toBeInTheDocument()
+    expect(
+      screen.getByText('すべての座標の平均値。重心（Centroid）とも呼ばれる。')
+    ).toBeInTheDocument()
   })
 
   it('should render geometric median marker with explanation popup', () => {
     render(<MapView locations={[]} geometricMedian={{ lat: 35.0, lng: 137.0 }} />)
     expect(screen.getByText('最適地点')).toBeInTheDocument()
-    expect(screen.getByText('全員の移動距離の合計が最小となる地点')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        '各点からの直線距離の和が最小となる地点。幾何中央値、ユークリッド最小和点、トリチェリ点とも呼ばれる。'
+      )
+    ).toBeInTheDocument()
   })
 
   it('should render all marker types together', () => {
