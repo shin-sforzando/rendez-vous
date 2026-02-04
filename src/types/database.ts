@@ -8,6 +8,29 @@ export interface Database {
         Update: Partial<Omit<Station, 'id' | 'created_at'>>
       }
     }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      find_nearby_stations: {
+        Args: { lat: number; lng: number; limit_count: number }
+        Returns: {
+          id: number
+          name: string
+          line_name: string | null
+          operator: string | null
+          lat: number
+          lng: number
+          distance_meters: number
+        }[]
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
 
