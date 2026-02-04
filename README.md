@@ -10,6 +10,7 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
     - [Updating Secrets](#updating-secrets)
   - [Pre-commit Hooks](#pre-commit-hooks)
   - [Development Commands](#development-commands)
+- [Deployment](#deployment)
 - [Station Data Import](#station-data-import)
   - [Setup](#setup)
   - [Usage](#usage)
@@ -128,6 +129,16 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+## Deployment
+
+This project is deployed on [Cloudflare Pages](https://pages.cloudflare.com/). Pushes to the `main` branch trigger automatic builds and deployments.
+
+- **Production URL**: <https://rendez-vous.pages.dev>
+- **Build command**: `npm run build`
+- **Output directory**: `dist`
+
+Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) must be configured in the Cloudflare Pages dashboard under **Settings > Environment variables**.
 
 ## Station Data Import
 

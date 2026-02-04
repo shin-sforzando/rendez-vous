@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Simplified geometric median icon for favicon -->
+  <!-- Connecting lines -->
+  <line x1="4" y1="5" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.5" opacity="0.5" />
+  <line x1="27" y1="4" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.5" opacity="0.5" />
+  <line x1="5" y1="26" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.5" opacity="0.5" />
+  <line x1="27" y1="27" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.5" opacity="0.5" />
+  <line x1="30" y1="16" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.5" opacity="0.5" />
+  <!-- Outer points (locations) -->
+  <circle cx="4" cy="5" r="3" fill="#45AEEE" />
+  <circle cx="27" cy="4" r="3" fill="#45AEEE" />
+  <circle cx="5" cy="26" r="3" fill="#45AEEE" />
+  <circle cx="27" cy="27" r="3" fill="#45AEEE" />
+  <circle cx="30" cy="16" r="3" fill="#45AEEE" />
+  <!-- Center point (geometric median / meeting point) -->
+  <circle cx="16" cy="16" r="5" fill="#E8488A" />
+</svg>

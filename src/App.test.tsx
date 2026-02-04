@@ -80,9 +80,9 @@ describe('App', () => {
   })
 
   describe('basic rendering', () => {
-    it('should render the app title in the navbar', () => {
+    it('should render the app logo in the navbar', () => {
       render(<App />)
-      expect(screen.getByText('rendez-vous')).toBeInTheDocument()
+      expect(screen.getByAltText('rendez-vous')).toBeInTheDocument()
     })
 
     it('should render the LocationForm component', () => {

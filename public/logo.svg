@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" fill="none">
+  <!-- Geometric median motif: points converging to center -->
+  <g transform="translate(4, 4)">
+    <!-- Connecting lines from outer points to center -->
+    <line x1="4" y1="6" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.2" opacity="0.5" />
+    <line x1="28" y1="4" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.2" opacity="0.5" />
+    <line x1="6" y1="26" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.2" opacity="0.5" />
+    <line x1="26" y1="28" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.2" opacity="0.5" />
+    <line x1="30" y1="16" x2="16" y2="16" stroke="#45AEEE" stroke-width="1.2" opacity="0.5" />
+    <!-- Outer points (locations) -->
+    <circle cx="4" cy="6" r="2.5" fill="#45AEEE" />
+    <circle cx="28" cy="4" r="2.5" fill="#45AEEE" />
+    <circle cx="6" cy="26" r="2.5" fill="#45AEEE" />
+    <circle cx="26" cy="28" r="2.5" fill="#45AEEE" />
+    <circle cx="30" cy="16" r="2.5" fill="#45AEEE" />
+    <!-- Center point (geometric median) -->
+    <circle cx="16" cy="16" r="4" fill="#E8488A" />
+  </g>
+  <!-- Text: rendez-vous -->
+  <text x="46" y="28" font-family="'Noto Sans JP', sans-serif" font-size="20" font-weight="700" fill="currentColor">rendez-vous</text>
+</svg>
