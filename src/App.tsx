@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import LocationForm from '@/components/LocationForm'
 import MapView from '@/components/Map'
 import ResultCard from '@/components/ResultCard'
+import { useNearbyStations } from '@/hooks/useNearbyStations'
 import { centroid, geometricMedian } from '@/lib/geo'
 import type { Location, MeetingPointResult } from '@/types'
 
@@ -26,6 +27,9 @@ function App() {
       locations,
     }
   }, [locations])
+
+  const centroidNearby = useNearbyStations(result?.centroid ?? null)
+  const medianNearby = useNearbyStations(result?.geometricMedian ?? null)
 
   const isMaxReached = locations.length >= MAX_LOCATIONS
 
@@ -72,7 +76,14 @@ function App() {
         {/* Left column: input form + result card (scrollable on desktop) */}
         <aside className="w-full lg:w-[28rem] shrink-0 flex flex-col gap-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto overflow-x-hidden">
           <LocationForm onAdd={handleAddLocation} disabled={isMaxReached} />
-          <ResultCard locations={locations} result={result} onRemove={handleRemoveLocation} />
+          <ResultCard
+            locations={locations}
+            result={result}
+            onRemove={handleRemoveLocation}
+            centroidNearbyStations={centroidNearby.stations}
+            medianNearbyStations={medianNearby.stations}
+            isLoadingNearbyStations={centroidNearby.isLoading || medianNearby.isLoading}
+          />
         </aside>
 
         {/* Right column: map (fills remaining space) */}

@@ -35,8 +35,24 @@ vi.mock('@/hooks/useStationSearch', () => ({
   useStationSearch: (...args: unknown[]) => mockUseStationSearch(...args),
 }))
 
+// Mock useNearbyStations hook
+const mockUseNearbyStations = vi.fn()
+vi.mock('@/hooks/useNearbyStations', () => ({
+  useNearbyStations: (...args: unknown[]) => mockUseNearbyStations(...args),
+}))
+
 function setMockStationSearch(overrides: Record<string, unknown> = {}) {
   mockUseStationSearch.mockReturnValue({
+    stations: [],
+    isLoading: false,
+    error: null,
+    isUsingMockData: false,
+    ...overrides,
+  })
+}
+
+function setMockNearbyStations(overrides: Record<string, unknown> = {}) {
+  mockUseNearbyStations.mockReturnValue({
     stations: [],
     isLoading: false,
     error: null,
@@ -58,6 +74,7 @@ function addLocationViaForm(label: string, lat: string, lng: string) {
 describe('App', () => {
   beforeEach(() => {
     setMockStationSearch()
+    setMockNearbyStations()
   })
 
   describe('basic rendering', () => {
@@ -233,6 +250,31 @@ describe('App', () => {
       expect(within(resultCard).getByText('渋谷')).toBeInTheDocument()
       expect(within(resultCard).getByText('横浜駅')).toBeInTheDocument()
       expect(screen.getByText('計算結果')).toBeInTheDocument()
+    })
+  })
+
+  describe('nearby stations integration', () => {
+    it('should call useNearbyStations with null when no result', () => {
+      render(<App />)
+
+      // The hook should have been called with null for both centroid and median
+      expect(mockUseNearbyStations).toHaveBeenCalledWith(null)
+    })
+
+    it('should call useNearbyStations with coordinates when result exists', () => {
+      render(<App />)
+      addLocationViaForm('東京駅', '35.6812', '139.7671')
+      addLocationViaForm('新宿駅', '35.6896', '139.7006')
+
+      // After adding 2 locations, the hook should have been called with coordinate objects
+      const calls = mockUseNearbyStations.mock.calls
+      const lastCalls = calls.slice(-2)
+
+      // Both calls should have LatLng objects (not null)
+      const hasCoordCalls = lastCalls.some(
+        (call: unknown[]) => call[0] !== null && typeof call[0] === 'object'
+      )
+      expect(hasCoordCalls).toBe(true)
     })
   })
 })

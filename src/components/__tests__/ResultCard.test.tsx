@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { Location, MeetingPointResult } from '@/types'
+import type { Location, MeetingPointResult, NearbyStation } from '@/types'
 import ResultCard from '../ResultCard'
 
 const LOCATIONS: Location[] = [
@@ -107,12 +107,18 @@ describe('ResultCard', () => {
   describe('info tips', () => {
     it('should show info tip for centroid', () => {
       render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
-      expect(screen.getByLabelText('全員の座標の平均')).toBeInTheDocument()
+      expect(
+        screen.getByLabelText('すべての座標の平均値。重心（Centroid）とも呼ばれる。')
+      ).toBeInTheDocument()
     })
 
     it('should show info tip for geometric median', () => {
       render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
-      expect(screen.getByLabelText('全員の移動距離の合計が最小となる地点')).toBeInTheDocument()
+      expect(
+        screen.getByLabelText(
+          '各点からの直線距離の和が最小となる地点。幾何中央値、ユークリッド最小和点、トリチェリ点とも呼ばれる。'
+        )
+      ).toBeInTheDocument()
     })
   })
 
@@ -143,6 +149,230 @@ describe('ResultCard', () => {
       }
       render(<ResultCard locations={closeLocations} result={closeResult} />)
       expect(screen.getAllByText('0 m').length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('nearby stations', () => {
+    // Multi-line test data: 東京 has 3 lines, 大手町 has 2 lines
+    const NEARBY_CENTROID: NearbyStation[] = [
+      {
+        id: 1,
+        name: '東京',
+        line_name: 'JR山手線',
+        operator: 'JR東日本',
+        lat: 35.6812,
+        lng: 139.7671,
+        distance_meters: 0,
+      },
+      {
+        id: 2,
+        name: '東京',
+        line_name: '東海道線',
+        operator: 'JR東日本',
+        lat: 35.6812,
+        lng: 139.7671,
+        distance_meters: 41,
+      },
+      {
+        id: 3,
+        name: '東京',
+        line_name: '丸ノ内線',
+        operator: '東京地下鉄',
+        lat: 35.6819,
+        lng: 139.7648,
+        distance_meters: 224,
+      },
+      {
+        id: 4,
+        name: '大手町',
+        line_name: '東西線',
+        operator: '東京地下鉄',
+        lat: 35.6847,
+        lng: 139.7659,
+        distance_meters: 406,
+      },
+      {
+        id: 5,
+        name: '大手町',
+        line_name: '三田線',
+        operator: '東京都',
+        lat: 35.6841,
+        lng: 139.7626,
+        distance_meters: 516,
+      },
+      {
+        id: 6,
+        name: '二重橋前',
+        line_name: null,
+        operator: '東京地下鉄',
+        lat: 35.6805,
+        lng: 139.7618,
+        distance_meters: 488,
+      },
+    ]
+
+    const NEARBY_MEDIAN: NearbyStation[] = [
+      {
+        id: 7,
+        name: '品川',
+        line_name: 'JR山手線',
+        operator: 'JR東日本',
+        lat: 35.6284,
+        lng: 139.7387,
+        distance_meters: 400,
+      },
+      {
+        id: 8,
+        name: '品川',
+        line_name: '京急本線',
+        operator: '京急',
+        lat: 35.6284,
+        lng: 139.7387,
+        distance_meters: 420,
+      },
+    ]
+
+    it('should maintain existing behavior when nearby station props are not provided', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.queryByTestId('nearby-stations-centroid')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('nearby-stations-median')).not.toBeInTheDocument()
+    })
+
+    it('should not render nearby stations when result is null', () => {
+      render(
+        <ResultCard
+          locations={[]}
+          result={null}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={NEARBY_MEDIAN}
+        />
+      )
+      expect(screen.queryByTestId('nearby-stations-centroid')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('nearby-stations-median')).not.toBeInTheDocument()
+    })
+
+    it('should show loading state for nearby stations', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={[]}
+          medianNearbyStations={[]}
+          isLoadingNearbyStations={true}
+        />
+      )
+
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      expect(within(centroidSection).getByText('最寄り駅を検索中...')).toBeInTheDocument()
+
+      const medianSection = screen.getByTestId('nearby-stations-median')
+      expect(within(medianSection).getByText('最寄り駅を検索中...')).toBeInTheDocument()
+    })
+
+    it('should group stations by name for centroid', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={[]}
+        />
+      )
+
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      // 6 raw rows grouped into 3 unique stations
+      const items = within(centroidSection).getAllByRole('listitem')
+      expect(items).toHaveLength(3)
+      expect(within(centroidSection).getByText('東京')).toBeInTheDocument()
+      expect(within(centroidSection).getByText('大手町')).toBeInTheDocument()
+      expect(within(centroidSection).getByText('二重橋前')).toBeInTheDocument()
+    })
+
+    it('should group stations by name for geometric median', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={[]}
+          medianNearbyStations={NEARBY_MEDIAN}
+        />
+      )
+
+      const medianSection = screen.getByTestId('nearby-stations-median')
+      // 2 raw rows grouped into 1 unique station
+      const items = within(medianSection).getAllByRole('listitem')
+      expect(items).toHaveLength(1)
+      expect(within(medianSection).getByText('品川')).toBeInTheDocument()
+    })
+
+    it('should display line names joined with slash separator', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={[]}
+        />
+      )
+
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      expect(
+        within(centroidSection).getByText('JR山手線 / 東海道線 / 丸ノ内線')
+      ).toBeInTheDocument()
+      expect(within(centroidSection).getByText('東西線 / 三田線')).toBeInTheDocument()
+    })
+
+    it('should not display line names when all are null', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={[]}
+        />
+      )
+
+      // Station "二重橋前" has line_name: null
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      const items = within(centroidSection).getAllByRole('listitem')
+      const nijubashiItem = items[2]
+      // Should have name and distance but no line text
+      expect(nijubashiItem).toHaveTextContent('二重橋前')
+      expect(nijubashiItem).not.toHaveTextContent('/')
+    })
+
+    it('should display distance using the closest line for each station', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={[]}
+        />
+      )
+
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      // 東京: min distance = 0m → "0 m"
+      expect(within(centroidSection).getByText('0 m')).toBeInTheDocument()
+      // 大手町: min distance = 406m → "406 m"
+      expect(within(centroidSection).getByText('406 m')).toBeInTheDocument()
+      // 二重橋前: min distance = 488m → "488 m"
+      expect(within(centroidSection).getByText('488 m')).toBeInTheDocument()
+    })
+
+    it('should display numbered badges for each grouped station', () => {
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          centroidNearbyStations={NEARBY_CENTROID}
+          medianNearbyStations={[]}
+        />
+      )
+
+      const centroidSection = screen.getByTestId('nearby-stations-centroid')
+      const badges = within(centroidSection).getAllByText(/^[123]$/)
+      expect(badges).toHaveLength(3)
     })
   })
 })

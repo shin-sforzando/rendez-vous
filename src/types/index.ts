@@ -16,6 +16,14 @@ export interface Location {
 
 export type { Database, Station, StationWithCoords } from './database'
 
+import type { StationWithCoords } from './database'
+
+/** A station with its distance from a reference point */
+export interface NearbyStation extends StationWithCoords {
+  /** Distance from the reference point in meters */
+  distance_meters: number
+}
+
 /** Result of meeting point calculation */
 export interface MeetingPointResult {
   /** Centroid (arithmetic mean) of all locations */
