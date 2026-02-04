@@ -6,10 +6,10 @@ export interface LatLng {
   lng: number
 }
 
-/** A named location with coordinates */
+/** A labeled location with coordinates */
 export interface Location {
-  /** Display name for the location */
-  name: string
+  /** Display label for the location */
+  label: string
   /** Geographic coordinates */
   latlng: LatLng
 }

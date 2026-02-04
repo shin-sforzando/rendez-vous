@@ -136,11 +136,11 @@ function MapView({ locations, centroid, geometricMedian }: MapProps) {
 
         {locations.map((location, index) => (
           <Marker
-            key={`location-${location.name}-${index}`}
+            key={`location-${location.label}-${index}`}
             position={[location.latlng.lat, location.latlng.lng]}
             icon={createCircleIcon('var(--color-primary)', String(index + 1))}
           >
-            <Popup>{location.name}</Popup>
+            <Popup>{location.label}</Popup>
           </Marker>
         ))}
 

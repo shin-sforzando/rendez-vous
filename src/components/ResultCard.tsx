@@ -105,18 +105,18 @@ function ResultCard({ locations, result, onRemove }: ResultCardProps) {
             {result && <h3 className="font-semibold mb-2">各地点からの距離</h3>}
             <ul className="flex flex-col gap-2">
               {locations.map((location, index) => (
-                <li key={`${location.name}-${index}`} className="bg-base-200 rounded-lg px-3 py-2">
+                <li key={`${location.label}-${index}`} className="bg-base-200 rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="badge badge-primary badge-sm shrink-0">{index + 1}</span>
-                      <span className="text-sm font-medium truncate">{location.name}</span>
+                      <span className="text-sm font-medium truncate">{location.label}</span>
                     </div>
                     {onRemove && (
                       <button
                         type="button"
                         className="btn btn-ghost btn-xs shrink-0"
                         onClick={() => onRemove(index)}
-                        aria-label={`${location.name}を削除`}
+                        aria-label={`${location.label}を削除`}
                       >
                         ✕
                       </button>
