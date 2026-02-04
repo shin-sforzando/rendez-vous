@@ -20,10 +20,11 @@ describe('serializeLocations', () => {
     expect(result).toBe(`locations=${encodeURIComponent('東京')},35.6812,139.7671`)
   })
 
-  it('should serialize multiple locations joined by |', () => {
+  it('should serialize multiple locations joined by %7C', () => {
     const result = serializeLocations([TOKYO, OSAKA])
-    expect(result).toContain('|')
-    const parts = result.replace('locations=', '').split('|')
+    expect(result).toContain('%7C')
+    expect(result).not.toContain('|')
+    const parts = result.replace('locations=', '').split('%7C')
     expect(parts).toHaveLength(2)
   })
 
@@ -40,16 +41,16 @@ describe('serializeLocations', () => {
       latlng: { lat: 35 + i * 0.01, lng: 139 + i * 0.01 },
     }))
     const result = serializeLocations(many)
-    const parts = result.replace('locations=', '').split('|')
+    const parts = result.replace('locations=', '').split('%7C')
     expect(parts).toHaveLength(10)
   })
 
   it('should encode special characters in labels', () => {
-    const loc: Location = { label: 'A,B|C', latlng: { lat: 35.0, lng: 139.0 } }
+    const loc: Location = { label: 'A,B&C', latlng: { lat: 35.0, lng: 139.0 } }
     const result = serializeLocations([loc])
-    // Commas and pipes in the label should be encoded
-    expect(result).toContain(encodeURIComponent('A,B|C'))
-    expect(result).not.toContain('A,B|C,35')
+    // Commas and ampersands in the label should be encoded
+    expect(result).toContain(encodeURIComponent('A,B&C'))
+    expect(result).not.toContain('A,B&C,35')
   })
 })
 
@@ -71,8 +72,16 @@ describe('deserializeLocations', () => {
     expect(result[0].latlng.lng).toBe(139.7671)
   })
 
-  it('should parse multiple locations', () => {
+  it('should parse multiple locations with literal pipe delimiter', () => {
     const search = `?locations=${encodeURIComponent('東京')},35.6812,139.7671|${encodeURIComponent('大阪')},34.6937,135.5023`
+    const result = deserializeLocations(search)
+    expect(result).toHaveLength(2)
+    expect(result[0].label).toBe('東京')
+    expect(result[1].label).toBe('大阪')
+  })
+
+  it('should parse multiple locations with encoded %7C delimiter (Slack-shared URLs)', () => {
+    const search = `?locations=${encodeURIComponent('東京')},35.6812,139.7671%7C${encodeURIComponent('大阪')},34.6937,135.5023`
     const result = deserializeLocations(search)
     expect(result).toHaveLength(2)
     expect(result[0].label).toBe('東京')
@@ -111,12 +120,22 @@ describe('deserializeLocations', () => {
     expect(result[1].label).toBe('大阪')
   })
 
-  it('should cap at 10 locations', () => {
+  it('should cap at 10 locations with literal pipe', () => {
     const entries = Array.from(
       { length: 15 },
       (_, i) => `loc${i},${35 + i * 0.01},${139 + i * 0.01}`
     )
     const search = `?locations=${entries.join('|')}`
+    const result = deserializeLocations(search)
+    expect(result).toHaveLength(10)
+  })
+
+  it('should cap at 10 locations with encoded pipe', () => {
+    const entries = Array.from(
+      { length: 15 },
+      (_, i) => `loc${i},${35 + i * 0.01},${139 + i * 0.01}`
+    )
+    const search = `?locations=${entries.join('%7C')}`
     const result = deserializeLocations(search)
     expect(result).toHaveLength(10)
   })
@@ -150,11 +169,11 @@ describe('serializeLocations / deserializeLocations roundtrip', () => {
   })
 
   it('should roundtrip labels with special characters', () => {
-    const original: Location[] = [{ label: 'A,B|C D', latlng: { lat: 35.0, lng: 139.0 } }]
+    const original: Location[] = [{ label: 'A,B&C D', latlng: { lat: 35.0, lng: 139.0 } }]
     const serialized = serializeLocations(original)
     const restored = deserializeLocations(`?${serialized}`)
     expect(restored).toHaveLength(1)
-    expect(restored[0].label).toBe('A,B|C D')
+    expect(restored[0].label).toBe('A,B&C D')
   })
 })
 
