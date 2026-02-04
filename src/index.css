@@ -12,5 +12,5 @@
 
 /* Desaturate map tiles so markers and polygons stand out */
 .leaflet-tile-pane {
-  filter: saturate(0.2);
+  filter: saturate(0.5);
 }
