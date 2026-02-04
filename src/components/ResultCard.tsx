@@ -43,7 +43,12 @@ function groupStationsByName(
   for (const s of stations) {
     const existing = groups.get(s.name)
     if (existing) {
-      if (s.line_name) existing.lines.push(s.line_name)
+      if (s.distance_meters < existing.distance_meters) {
+        existing.distance_meters = s.distance_meters
+      }
+      if (s.line_name && !existing.lines.includes(s.line_name)) {
+        existing.lines.push(s.line_name)
+      }
     } else {
       groups.set(s.name, {
         distance_meters: s.distance_meters,

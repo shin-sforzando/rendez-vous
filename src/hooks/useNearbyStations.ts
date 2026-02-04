@@ -79,7 +79,7 @@ export function useNearbyStations(
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        const message = err instanceof Error ? err.message : 'Unknown error'
+        const message = err instanceof Error ? err.message : '不明なエラーが発生しました'
         setError(message)
         setStations([])
       })
