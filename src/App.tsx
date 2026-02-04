@@ -60,7 +60,7 @@ function App() {
     <div className="min-h-screen bg-base-200 flex flex-col">
       <header className="navbar bg-base-100 shadow-sm">
         <div className="flex-1">
-          <span className="text-xl font-bold px-4">rendez-vous</span>
+          <img src="/logo.svg" alt="rendez-vous" className="h-8 px-4" />
         </div>
         <div className="flex-none px-4">
           <label className="swap swap-rotate" aria-label="テーマ切り替え">

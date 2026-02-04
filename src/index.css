@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@theme {
+  --font-sans: "Noto Sans JP", sans-serif;
+}
 @plugin "daisyui" {
   exclude: properties;
   themes:
@@ -9,5 +12,5 @@
 
 /* Desaturate map tiles so markers and polygons stand out */
 .leaflet-tile-pane {
-  filter: saturate(0.3);
+  filter: saturate(0.2);
 }
