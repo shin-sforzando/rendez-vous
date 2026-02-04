@@ -14,6 +14,10 @@ interface ResultCardProps {
   medianNearbyStations?: NearbyStation[]
   /** Whether nearby station data is loading */
   isLoadingNearbyStations?: boolean
+  /** Callback to copy share URL to clipboard */
+  onCopyUrl?: () => void
+  /** Whether the URL was just copied */
+  isCopied?: boolean
 }
 
 /** Format distance in km for display */
@@ -109,6 +113,8 @@ function ResultCard({
   centroidNearbyStations,
   medianNearbyStations,
   isLoadingNearbyStations,
+  onCopyUrl,
+  isCopied,
 }: ResultCardProps) {
   const { centroid, geometricMedian } = result ?? {}
 
@@ -230,6 +236,13 @@ function ResultCard({
               ))}
             </ul>
           </div>
+        )}
+
+        {/* Copy URL button */}
+        {locations.length > 0 && onCopyUrl && (
+          <button type="button" className="btn btn-outline btn-sm mt-4 w-full" onClick={onCopyUrl}>
+            {isCopied ? 'コピーしました!' : 'URLをコピー'}
+          </button>
         )}
       </div>
     </div>

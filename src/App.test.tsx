@@ -73,6 +73,8 @@ function addLocationViaForm(label: string, lat: string, lng: string) {
 
 describe('App', () => {
   beforeEach(() => {
+    // Clear URL query params so getInitialLocationsFromUrl starts fresh
+    window.history.replaceState(null, '', window.location.pathname)
     setMockStationSearch()
     setMockNearbyStations()
   })

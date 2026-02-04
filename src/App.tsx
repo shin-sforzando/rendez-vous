@@ -1,17 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import LocationForm from '@/components/LocationForm'
 import MapView from '@/components/Map'
 import ResultCard from '@/components/ResultCard'
+import { useLocationUrlSync } from '@/hooks/useLocationUrlSync'
 import { useNearbyStations } from '@/hooks/useNearbyStations'
 import { centroid, geometricMedian } from '@/lib/geo'
+import { buildShareUrl, getInitialLocationsFromUrl } from '@/lib/urlState'
 import type { Location, MeetingPointResult } from '@/types'
 
 /** Maximum number of locations allowed */
 const MAX_LOCATIONS = 10
 
 function App() {
-  const [locations, setLocations] = useState<Location[]>([])
+  const [locations, setLocations] = useState<Location[]>(getInitialLocationsFromUrl)
   const [isDark, setIsDark] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+
+  useLocationUrlSync(locations)
 
   /* Sync theme attribute on <html> */
   useEffect(() => {
@@ -40,6 +45,16 @@ function App() {
   function handleRemoveLocation(index: number) {
     setLocations((prev) => prev.filter((_, i) => i !== index))
   }
+
+  const handleCopyUrl = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(buildShareUrl(locations))
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    } catch {
+      // Clipboard API not available — fail silently
+    }
+  }, [locations])
 
   return (
     <div className="min-h-screen bg-base-200 flex flex-col">
@@ -83,6 +98,8 @@ function App() {
             centroidNearbyStations={centroidNearby.stations}
             medianNearbyStations={medianNearby.stations}
             isLoadingNearbyStations={centroidNearby.isLoading || medianNearby.isLoading}
+            onCopyUrl={handleCopyUrl}
+            isCopied={isCopied}
           />
         </aside>
 
