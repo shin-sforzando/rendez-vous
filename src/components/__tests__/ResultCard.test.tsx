@@ -375,4 +375,50 @@ describe('ResultCard', () => {
       expect(badges).toHaveLength(3)
     })
   })
+
+  describe('copy URL button', () => {
+    it('should not show copy button when onCopyUrl is not provided', () => {
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
+      expect(screen.queryByText('URLをコピー')).not.toBeInTheDocument()
+    })
+
+    it('should not show copy button when locations are empty', () => {
+      const handleCopy = vi.fn()
+      render(<ResultCard locations={[]} result={null} onCopyUrl={handleCopy} />)
+      expect(screen.queryByText('URLをコピー')).not.toBeInTheDocument()
+    })
+
+    it('should show copy button when locations exist and onCopyUrl is provided', () => {
+      const handleCopy = vi.fn()
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} onCopyUrl={handleCopy} />)
+      expect(screen.getByText('URLをコピー')).toBeInTheDocument()
+    })
+
+    it('should call onCopyUrl when button is clicked', () => {
+      const handleCopy = vi.fn()
+      render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} onCopyUrl={handleCopy} />)
+      fireEvent.click(screen.getByText('URLをコピー'))
+      expect(handleCopy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should show copied message when isCopied is true', () => {
+      const handleCopy = vi.fn()
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          onCopyUrl={handleCopy}
+          isCopied={true}
+        />
+      )
+      expect(screen.getByText('コピーしました!')).toBeInTheDocument()
+      expect(screen.queryByText('URLをコピー')).not.toBeInTheDocument()
+    })
+
+    it('should show copy button with single location (no result)', () => {
+      const handleCopy = vi.fn()
+      render(<ResultCard locations={[LOCATIONS[0]]} result={null} onCopyUrl={handleCopy} />)
+      expect(screen.getByText('URLをコピー')).toBeInTheDocument()
+    })
+  })
 })
