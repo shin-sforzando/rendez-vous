@@ -21,6 +21,8 @@ vi.mock('react-leaflet', () => ({
   Polygon: () => <div data-testid="polygon" />,
   useMap: () => ({
     fitBounds: vi.fn(),
+    invalidateSize: vi.fn(),
+    getContainer: () => ({ clientWidth: 400, clientHeight: 300 }),
   }),
 }))
 

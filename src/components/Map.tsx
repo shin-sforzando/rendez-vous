@@ -13,10 +13,30 @@ function MapBounds({ positions }: { positions: LatLng[] }) {
   const map = useMap()
 
   useEffect(() => {
-    if (positions.length > 0) {
+    if (positions.length === 0) return
+
+    const fitMapBounds = () => {
+      // Ensure Leaflet recognizes the current container dimensions
+      map.invalidateSize()
+
       const latlngs: LatLngExpression[] = positions.map((p) => [p.lat, p.lng])
-      map.fitBounds(latLngBounds(latlngs), { padding: [50, 50], maxZoom: 14 })
+
+      // Calculate responsive padding based on container size
+      const container = map.getContainer()
+      const minDimension = Math.min(container.clientWidth, container.clientHeight)
+      const padding = Math.max(20, Math.min(50, minDimension * 0.1))
+
+      map.fitBounds(latLngBounds(latlngs), {
+        padding: [padding, padding],
+        maxZoom: 14,
+      })
     }
+
+    // Use requestAnimationFrame to ensure DOM layout is complete
+    requestAnimationFrame(() => {
+      // Double RAF to ensure layout is fully calculated (especially on mobile)
+      requestAnimationFrame(fitMapBounds)
+    })
   }, [map, positions])
 
   return null
