@@ -1,6 +1,15 @@
 # rendez-vous
 
+<!-- Badges -->
+
+[![Last Commit](https://img.shields.io/github/last-commit/shin-sforzando/rendez-vous)](https://github.com/shin-sforzando/rendez-vous/graphs/commit-activity)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
+<!-- Synopsis -->
+
 A web app that finds the optimal meeting spot for groups by calculating both centroid and geometric median to minimize total travel distance.
+
+<!-- TOC -->
 
 - [Development Setup](#development-setup)
   - [Prerequisites](#prerequisites)
@@ -14,6 +23,7 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
 - [Station Data Import](#station-data-import)
   - [Setup](#setup)
   - [Usage](#usage)
+- [Misc](#misc)
 
 ## Development Setup
 
@@ -169,3 +179,7 @@ npm run import:stations -- data/N02-24_GML/UTF-8/N02-24_Station.geojson
 ```
 
 The script is idempotent: re-running it will skip stations that already exist in the database.
+
+## Misc
+
+This repository is [Commitizen](https://commitizen.github.io/cz-cli/) friendly, following [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow).

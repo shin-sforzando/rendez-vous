@@ -77,6 +77,8 @@ describe('App', () => {
     window.history.replaceState(null, '', window.location.pathname)
     setMockStationSearch()
     setMockNearbyStations()
+    // Reset window.confirm mock
+    vi.restoreAllMocks()
   })
 
   describe('basic rendering', () => {
@@ -277,6 +279,58 @@ describe('App', () => {
         (call: unknown[]) => call[0] !== null && typeof call[0] === 'object'
       )
       expect(hasCoordCalls).toBe(true)
+    })
+  })
+
+  describe('logo click reset', () => {
+    it('should render logo as clickable button', () => {
+      render(<App />)
+      const logoButton = screen.getByLabelText('ホームに戻る')
+      expect(logoButton).toBeInTheDocument()
+      expect(logoButton.tagName).toBe('BUTTON')
+    })
+
+    it('should show confirm dialog when logo is clicked with locations', () => {
+      const confirmMock = vi.fn(() => false)
+      vi.stubGlobal('confirm', confirmMock)
+
+      render(<App />)
+      addLocationViaForm('東京駅', '35.6812', '139.7671')
+
+      fireEvent.click(screen.getByLabelText('ホームに戻る'))
+
+      expect(confirmMock).toHaveBeenCalledWith('登録地点をリセットしていいですか？')
+      vi.unstubAllGlobals()
+    })
+
+    it('should not show confirm dialog when no locations exist', () => {
+      const confirmMock = vi.fn()
+      vi.stubGlobal('confirm', confirmMock)
+
+      render(<App />)
+
+      fireEvent.click(screen.getByLabelText('ホームに戻る'))
+
+      expect(confirmMock).not.toHaveBeenCalled()
+      vi.unstubAllGlobals()
+    })
+  })
+
+  describe('data source credit', () => {
+    it('should render data source credit with date in map', () => {
+      render(<App />)
+      // Data source credit is displayed in the map component
+      expect(screen.getByText(/国土交通省 国土数値情報/)).toBeInTheDocument()
+      expect(screen.getByText(/2025年6月/)).toBeInTheDocument()
+    })
+
+    it('should render data source link with correct href', () => {
+      render(<App />)
+      const dataLink = screen.getByRole('link', { name: /国土交通省 国土数値情報/ })
+      expect(dataLink).toHaveAttribute(
+        'href',
+        'https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html'
+      )
     })
   })
 })

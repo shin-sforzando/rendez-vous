@@ -18,6 +18,19 @@ function App() {
 
   useLocationUrlSync(locations)
 
+  /** Reset all locations and navigate to root */
+  const handleLogoClick = useCallback(() => {
+    if (locations.length === 0) {
+      // No locations to reset, just navigate
+      window.history.replaceState(null, '', '/')
+      return
+    }
+    if (window.confirm('登録地点をリセットしていいですか？')) {
+      setLocations([])
+      window.history.replaceState(null, '', '/')
+    }
+  }, [locations.length])
+
   /* Sync theme attribute on <html> */
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'cmyk')
@@ -57,10 +70,17 @@ function App() {
   }, [locations])
 
   return (
-    <div className="min-h-screen bg-base-200 flex flex-col">
+    <div className="min-h-full lg:h-full bg-base-200 flex flex-col lg:overflow-hidden">
       <header className="navbar bg-base-100 shadow-sm">
         <div className="flex-1">
-          <img src="/logo.svg" alt="rendez-vous" className="h-8 px-4" />
+          <button
+            type="button"
+            onClick={handleLogoClick}
+            className="btn btn-ghost h-auto min-h-0 p-0 px-4"
+            aria-label="ホームに戻る"
+          >
+            <img src="/logo.svg" alt="rendez-vous" className="h-8" />
+          </button>
         </div>
         <div className="flex-none px-4">
           <label className="swap swap-rotate" aria-label="テーマ切り替え">
@@ -87,9 +107,9 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4">
+      <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
         {/* Left column: input form + result card (scrollable on desktop) */}
-        <aside className="w-full lg:w-[28rem] shrink-0 flex flex-col gap-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto overflow-x-hidden">
+        <aside className="w-full lg:w-md shrink-0 flex flex-col gap-4 lg:overflow-y-auto overflow-x-hidden">
           <LocationForm onAdd={handleAddLocation} disabled={isMaxReached} />
           <ResultCard
             locations={locations}
@@ -104,7 +124,7 @@ function App() {
         </aside>
 
         {/* Right column: map (fills remaining space) */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 min-h-64 lg:min-h-0">
           <MapView
             locations={locations}
             centroid={result?.centroid}
