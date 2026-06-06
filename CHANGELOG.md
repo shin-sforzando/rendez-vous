@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - 2026-06-06 10:56:52 :sparkles: bump typescript to v6.0.3 _by shin-sforzando_
 - 2026-06-06 11:42:26 :sparkles: add changelog and git-cliff configuration
 - 2026-06-06 11:52:54 :sparkles: add pre-push hook to generate CHANGELOG.md
+- 2026-06-06 12:23:09 :sparkles: bump vite to v8 and @vitejs/plugin-react to v6
 
 ### Refactor
 

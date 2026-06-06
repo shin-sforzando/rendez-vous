@@ -10,12 +10,24 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'map-vendor': ['leaflet', 'react-leaflet'],
-          'supabase-vendor': ['@supabase/supabase-js'],
+        manualChunks(id) {
+          // Order matters: more specific paths first so that react-leaflet
+          // lands in map-vendor instead of being matched by the react check.
+          if (id.includes('node_modules/react-leaflet') || id.includes('node_modules/leaflet')) {
+            return 'map-vendor'
+          }
+          if (id.includes('node_modules/@supabase/supabase-js')) {
+            return 'supabase-vendor'
+          }
+          if (
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'react-vendor'
+          }
         },
       },
     },
