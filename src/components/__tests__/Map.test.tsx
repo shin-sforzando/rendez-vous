@@ -46,8 +46,8 @@ describe('Map', () => {
 
   it('should render markers for each location', () => {
     const locations = [
-      { label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
-      { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+      { id: 'tokyo', label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+      { id: 'osaka', label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
     ]
     render(<MapView locations={locations} />)
 
@@ -76,7 +76,7 @@ describe('Map', () => {
   })
 
   it('should render all marker types together', () => {
-    const locations = [{ label: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } }]
+    const locations = [{ id: 'nagoya', label: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } }]
     render(
       <MapView
         locations={locations}
@@ -92,8 +92,8 @@ describe('Map', () => {
 
   it('should not render convex hull polygon with fewer than 3 locations', () => {
     const locations = [
-      { label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
-      { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+      { id: 'tokyo', label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+      { id: 'osaka', label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
     ]
     render(<MapView locations={locations} />)
     expect(screen.queryByTestId('polygon')).not.toBeInTheDocument()
@@ -101,9 +101,9 @@ describe('Map', () => {
 
   it('should render convex hull polygon with 3 or more locations', () => {
     const locations = [
-      { label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
-      { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
-      { label: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
+      { id: 'tokyo', label: '東京', latlng: { lat: 35.6762, lng: 139.6503 } },
+      { id: 'osaka', label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } },
+      { id: 'nagoya', label: '名古屋', latlng: { lat: 35.1815, lng: 136.9066 } },
     ]
     render(<MapView locations={locations} />)
     expect(screen.getByTestId('polygon')).toBeInTheDocument()

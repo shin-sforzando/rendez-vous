@@ -8,6 +8,8 @@ export interface LatLng {
 
 /** A labeled location with coordinates */
 export interface Location {
+  /** Unique identifier (assigned at creation, not persisted to URL) */
+  id: string
   /** Display label for the location */
   label: string
   /** Geographic coordinates */

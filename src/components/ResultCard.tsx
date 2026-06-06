@@ -205,7 +205,7 @@ function ResultCard({
             {result && <h3 className="font-semibold mb-2">各地点からの距離</h3>}
             <ul className="flex flex-col gap-2">
               {locations.map((location, index) => (
-                <li key={`${location.label}-${index}`} className="bg-base-200 rounded-lg px-3 py-2">
+                <li key={location.id} className="bg-base-200 rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="badge badge-primary badge-sm shrink-0">{index + 1}</span>
