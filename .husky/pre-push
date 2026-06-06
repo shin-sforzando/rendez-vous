@@ -7,7 +7,7 @@ echo "🚀 Running pre-push checks..."
 # Regenerate CHANGELOG.md with git-cliff
 if command -v git-cliff &> /dev/null; then
   echo "📝 Generating CHANGELOG.md with git-cliff..."
-  git cliff --verbose --output CHANGELOG.md
+  git cliff --output CHANGELOG.md
 
   # Auto-commit and abort: the push refs are already resolved before this
   # hook runs, so a new commit made here cannot ride the current push. The
@@ -27,3 +27,4 @@ else
 fi
 
 echo "✅ All pre-push checks passed!"
+
