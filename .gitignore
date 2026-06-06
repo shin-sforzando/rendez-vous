@@ -138,6 +138,9 @@ dist-ssr
 # Vitest
 coverage/
 
+# Claude
+.claude/
+
 # Playwright
 .playwright-mcp/
 
