@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 - 2026-02-05 10:03:26 :sparkles: improve map bounds fitting and add container size handling _by shin-sforzando_
 - 2026-06-06 09:38:07 :sparkles: add initial configuration for coderabbit integration _by shin-sforzando_
 - 2026-06-06 10:56:52 :sparkles: bump typescript to v6.0.3 _by shin-sforzando_
+- 2026-06-06 11:42:26 :sparkles: add changelog and git-cliff configuration
+- 2026-06-06 11:52:54 :sparkles: add pre-push hook to generate CHANGELOG.md
 
 ### Refactor
 
