@@ -156,7 +156,7 @@ function MapView({ locations, centroid, geometricMedian }: MapProps) {
 
         {locations.map((location, index) => (
           <Marker
-            key={`location-${location.label}-${location.latlng.lat}-${location.latlng.lng}`}
+            key={location.id}
             position={[location.latlng.lat, location.latlng.lng]}
             icon={createCircleIcon('var(--color-primary)', String(index + 1))}
           >

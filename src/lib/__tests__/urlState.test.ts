@@ -7,8 +7,8 @@ import {
   serializeLocations,
 } from '../urlState'
 
-const TOKYO: Location = { label: '東京', latlng: { lat: 35.6812, lng: 139.7671 } }
-const OSAKA: Location = { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } }
+const TOKYO: Location = { id: 'tokyo', label: '東京', latlng: { lat: 35.6812, lng: 139.7671 } }
+const OSAKA: Location = { id: 'osaka', label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } }
 
 describe('serializeLocations', () => {
   it('should return empty string for empty array', () => {
@@ -29,14 +29,19 @@ describe('serializeLocations', () => {
   })
 
   it('should round coordinates to 4 decimal places', () => {
-    const loc: Location = { label: 'test', latlng: { lat: 35.12345678, lng: 139.98765432 } }
+    const loc: Location = {
+      id: 'test',
+      label: 'test',
+      latlng: { lat: 35.12345678, lng: 139.98765432 },
+    }
     const result = serializeLocations([loc])
     expect(result).toContain('35.1235')
     expect(result).toContain('139.9877')
   })
 
   it('should cap at 10 locations', () => {
-    const many = Array.from({ length: 15 }, (_, i) => ({
+    const many: Location[] = Array.from({ length: 15 }, (_, i) => ({
+      id: `loc-${i}`,
       label: `地点${i}`,
       latlng: { lat: 35 + i * 0.01, lng: 139 + i * 0.01 },
     }))
@@ -46,7 +51,7 @@ describe('serializeLocations', () => {
   })
 
   it('should encode special characters in labels', () => {
-    const loc: Location = { label: 'A,B&C', latlng: { lat: 35.0, lng: 139.0 } }
+    const loc: Location = { id: 'special', label: 'A,B&C', latlng: { lat: 35.0, lng: 139.0 } }
     const result = serializeLocations([loc])
     // Commas and ampersands in the label should be encoded
     expect(result).toContain(encodeURIComponent('A,B&C'))
@@ -169,7 +174,9 @@ describe('serializeLocations / deserializeLocations roundtrip', () => {
   })
 
   it('should roundtrip labels with special characters', () => {
-    const original: Location[] = [{ label: 'A,B&C D', latlng: { lat: 35.0, lng: 139.0 } }]
+    const original: Location[] = [
+      { id: 'special', label: 'A,B&C D', latlng: { lat: 35.0, lng: 139.0 } },
+    ]
     const serialized = serializeLocations(original)
     const restored = deserializeLocations(`?${serialized}`)
     expect(restored).toHaveLength(1)

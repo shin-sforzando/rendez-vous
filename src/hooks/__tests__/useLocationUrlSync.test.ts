@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Location } from '@/types'
 import { useLocationUrlSync } from '../useLocationUrlSync'
 
-const TOKYO: Location = { label: '東京', latlng: { lat: 35.6812, lng: 139.7671 } }
-const OSAKA: Location = { label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } }
+const TOKYO: Location = { id: 'tokyo', label: '東京', latlng: { lat: 35.6812, lng: 139.7671 } }
+const OSAKA: Location = { id: 'osaka', label: '大阪', latlng: { lat: 34.6937, lng: 135.5023 } }
 
 describe('useLocationUrlSync', () => {
   let replaceStateSpy: ReturnType<typeof vi.spyOn>

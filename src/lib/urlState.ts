@@ -54,7 +54,7 @@ export function deserializeLocations(search: string): Location[] {
     if (!label || Number.isNaN(lat) || Number.isNaN(lng)) continue
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) continue
 
-    locations.push({ label, latlng: { lat, lng } })
+    locations.push({ id: crypto.randomUUID(), label, latlng: { lat, lng } })
   }
 
   return locations

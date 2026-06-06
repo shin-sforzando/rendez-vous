@@ -51,7 +51,11 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
       displayLabel = trimmedLabel || `${parsedLat.toFixed(4)}, ${parsedLng.toFixed(4)}`
     }
 
-    onAdd({ label: displayLabel, latlng: { lat: parsedLat, lng: parsedLng } })
+    onAdd({
+      id: crypto.randomUUID(),
+      label: displayLabel,
+      latlng: { lat: parsedLat, lng: parsedLng },
+    })
 
     setLabel('')
     setStationQuery('')
