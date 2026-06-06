@@ -24,6 +24,17 @@ export interface Database {
           distance_meters: number
         }[]
       }
+      search_stations: {
+        Args: { query: string }
+        Returns: {
+          id: number
+          name: string
+          line_name: string | null
+          operator: string | null
+          lat: number
+          lng: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
