@@ -76,7 +76,7 @@ export function useStationSearch(
           setError(apiError.message)
           setStations([])
         } else {
-          setStations((data as StationWithCoords[]) ?? [])
+          setStations(data ?? [])
         }
       })
       .catch((err: unknown) => {

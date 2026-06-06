@@ -74,7 +74,7 @@ export function useNearbyStations(
           setError(apiError.message)
           setStations([])
         } else {
-          setStations((data as NearbyStation[]) ?? [])
+          setStations(data ?? [])
         }
       })
       .catch((err: unknown) => {
