@@ -426,14 +426,14 @@ function MapView({
       <div className="absolute bottom-6 right-2 z-[1000] text-xs text-base-content/70 bg-base-100/80 px-2 py-0.5 rounded">
         駅データ:{' '}
         <a
-          href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html"
+          href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html"
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-primary"
         >
           国土交通省 国土数値情報
         </a>{' '}
-        (2025年6月)
+        (2026年4月)
       </div>
     </div>
   )

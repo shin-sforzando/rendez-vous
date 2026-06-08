@@ -188,7 +188,7 @@ function ResultCard({
     <div data-testid="result-card" className="card bg-base-100 shadow-md">
       <div className="card-body">
         <h2 className="card-title text-lg">
-          {result ? '計算結果' : `登録済み出発地（${locations.length}）`}
+          {result ? '結果' : `出発地（${locations.length}）`}
         </h2>
 
         {/* Empty state */}

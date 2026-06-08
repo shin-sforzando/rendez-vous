@@ -108,7 +108,7 @@ describe('App', () => {
 
     it('should show empty state in ResultCard when no locations', () => {
       render(<App />)
-      expect(screen.getByText('登録済み出発地（0）')).toBeInTheDocument()
+      expect(screen.getByText('出発地（0）')).toBeInTheDocument()
     })
 
     it('should render theme toggle', () => {
@@ -124,7 +124,7 @@ describe('App', () => {
 
       const resultCard = screen.getByTestId('result-card')
       expect(within(resultCard).getByText('東京駅')).toBeInTheDocument()
-      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
+      expect(screen.getByText('出発地（1）')).toBeInTheDocument()
     })
 
     it('should add a location via station search', () => {
@@ -154,8 +154,8 @@ describe('App', () => {
       render(<App />)
       addLocationViaForm('東京駅', '35.6812', '139.7671')
 
-      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
-      expect(screen.queryByText('計算結果')).not.toBeInTheDocument()
+      expect(screen.getByText('出発地（1）')).toBeInTheDocument()
+      expect(screen.queryByText('結果')).not.toBeInTheDocument()
     })
   })
 
@@ -165,7 +165,7 @@ describe('App', () => {
       addLocationViaForm('東京駅', '35.6812', '139.7671')
       addLocationViaForm('新宿駅', '35.6896', '139.7006')
 
-      expect(screen.getByText('計算結果')).toBeInTheDocument()
+      expect(screen.getByText('結果')).toBeInTheDocument()
     })
 
     it('should display centroid and geometric median on map', () => {
@@ -207,12 +207,12 @@ describe('App', () => {
       addLocationViaForm('東京駅', '35.6812', '139.7671')
       addLocationViaForm('新宿駅', '35.6896', '139.7006')
 
-      expect(screen.getByText('計算結果')).toBeInTheDocument()
+      expect(screen.getByText('結果')).toBeInTheDocument()
 
       fireEvent.click(screen.getByLabelText('東京駅を削除'))
 
-      expect(screen.queryByText('計算結果')).not.toBeInTheDocument()
-      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
+      expect(screen.queryByText('結果')).not.toBeInTheDocument()
+      expect(screen.getByText('出発地（1）')).toBeInTheDocument()
     })
   })
 
@@ -257,7 +257,7 @@ describe('App', () => {
       const resultCard = screen.getByTestId('result-card')
       expect(within(resultCard).getByText('渋谷')).toBeInTheDocument()
       expect(within(resultCard).getByText('横浜駅')).toBeInTheDocument()
-      expect(screen.getByText('計算結果')).toBeInTheDocument()
+      expect(screen.getByText('結果')).toBeInTheDocument()
     })
   })
 
@@ -325,7 +325,7 @@ describe('App', () => {
       render(<App />)
       // Data source credit is displayed in the map component
       expect(screen.getByText(/国土交通省 国土数値情報/)).toBeInTheDocument()
-      expect(screen.getByText(/2025年6月/)).toBeInTheDocument()
+      expect(screen.getByText(/2026年4月/)).toBeInTheDocument()
     })
 
     it('should render data source link with correct href', () => {
@@ -333,8 +333,35 @@ describe('App', () => {
       const dataLink = screen.getByRole('link', { name: /国土交通省 国土数値情報/ })
       expect(dataLink).toHaveAttribute(
         'href',
-        'https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html'
+        'https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html'
       )
+    })
+  })
+
+  describe('footer placement', () => {
+    it('should render two footer instances with mutually exclusive responsive classes', () => {
+      const { container } = render(<App />)
+      const footers = container.querySelectorAll('footer')
+      expect(footers).toHaveLength(2)
+
+      // Desktop footer (visible at lg+): "hidden lg:flex", placed inside the aside
+      const desktopFooter = Array.from(footers).find((f) => f.className.includes('lg:flex'))
+      // Mobile footer (visible below lg): "flex lg:hidden", placed at site bottom
+      const mobileFooter = Array.from(footers).find((f) => f.className.includes('lg:hidden'))
+
+      expect(desktopFooter).toBeDefined()
+      expect(desktopFooter?.className).toContain('hidden')
+      expect(mobileFooter).toBeDefined()
+      expect(mobileFooter?.className).toContain('flex')
+    })
+
+    it('should place the desktop footer inside the left aside', () => {
+      const { container } = render(<App />)
+      const aside = container.querySelector('aside')
+      expect(aside).not.toBeNull()
+      const asideFooter = aside?.querySelector('footer')
+      expect(asideFooter).not.toBeNull()
+      expect(asideFooter?.className).toContain('lg:flex')
     })
   })
 })

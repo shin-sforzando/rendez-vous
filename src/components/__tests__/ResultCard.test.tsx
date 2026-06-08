@@ -35,14 +35,14 @@ describe('ResultCard', () => {
 
     it('should show location count in heading', () => {
       render(<ResultCard locations={[]} result={null} />)
-      expect(screen.getByText('登録済み出発地（0）')).toBeInTheDocument()
+      expect(screen.getByText('出発地（0）')).toBeInTheDocument()
     })
   })
 
   describe('with locations but no result (< 2 locations)', () => {
     it('should show location count heading', () => {
       render(<ResultCard locations={[LOCATIONS[0]]} result={null} />)
-      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
+      expect(screen.getByText('出発地（1）')).toBeInTheDocument()
     })
 
     it('should display the location name', () => {
@@ -59,7 +59,7 @@ describe('ResultCard', () => {
   describe('with result (>= 2 locations)', () => {
     it('should show calculation result heading', () => {
       render(<ResultCard locations={LOCATIONS} result={MOCK_RESULT} />)
-      expect(screen.getByText('計算結果')).toBeInTheDocument()
+      expect(screen.getByText('結果')).toBeInTheDocument()
     })
 
     it('should display centroid card with label and coordinates', () => {
