@@ -183,10 +183,20 @@ function MapView({
     () => groupStationsByName(centroidNearbyStations ?? []).slice(0, NEARBY_MARKER_LIMIT),
     [centroidNearbyStations]
   )
-  const medianTop = useMemo(
-    () => groupStationsByName(medianNearbyStations ?? []).slice(0, NEARBY_MARKER_LIMIT),
+  // Full grouped list (not sliced) — used to look up aggregated line names for the
+  // K-medoid winner, so the ★ popup matches ResultCard's SuggestedStationBox display.
+  const medianGroupedAll = useMemo(
+    () => groupStationsByName(medianNearbyStations ?? []),
     [medianNearbyStations]
   )
+  const medianTop = useMemo(
+    () => medianGroupedAll.slice(0, NEARBY_MARKER_LIMIT),
+    [medianGroupedAll]
+  )
+  const suggestedStationLines = useMemo(() => {
+    if (!suggestedStation) return undefined
+    return medianGroupedAll.find((g) => g.name === suggestedStation.station.name)?.lines
+  }, [suggestedStation, medianGroupedAll])
   // Suppress the suggestion marker when it visually coincides with the Median marker
   const showSuggestionMarker =
     suggestedStation != null &&
@@ -377,12 +387,21 @@ function MapView({
             <Popup>
               <strong>おすすめ駅: {suggestedStation.station.name}</strong>
               <br />
-              {suggestedStation.station.line_name && (
-                <>
-                  {suggestedStation.station.line_name}
-                  <br />
-                </>
-              )}
+              {(() => {
+                const displayLines =
+                  suggestedStationLines && suggestedStationLines.length > 0
+                    ? suggestedStationLines
+                    : suggestedStation.station.line_name
+                      ? [suggestedStation.station.line_name]
+                      : []
+                if (displayLines.length === 0) return null
+                return (
+                  <>
+                    {displayLines.join(' / ')}
+                    <br />
+                  </>
+                )
+              })()}
               全員からの合計距離: {suggestedStation.totalDistance.toFixed(1)} km
             </Popup>
           </Marker>
@@ -391,7 +410,7 @@ function MapView({
 
       {/* Reset-to-overview button (shown only when there is something to fit) */}
       {allPositions.length > 0 && (
-        <div className="tooltip tooltip-left absolute top-2 right-2 z-1000" data-tip="全体を表示">
+        <div className="tooltip tooltip-left absolute top-2 right-2 z-[1000]" data-tip="全体を表示">
           <button
             type="button"
             onClick={handleResetView}
@@ -404,7 +423,7 @@ function MapView({
       )}
 
       {/* Data source attribution */}
-      <div className="absolute bottom-6 right-2 z-1000 text-xs text-base-content/70 bg-base-100/80 px-2 py-0.5 rounded">
+      <div className="absolute bottom-6 right-2 z-[1000] text-xs text-base-content/70 bg-base-100/80 px-2 py-0.5 rounded">
         駅データ:{' '}
         <a
           href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html"

@@ -286,6 +286,64 @@ describe('Map', () => {
       expect(markers).toHaveLength(1)
       expect(screen.queryByText(/おすすめ駅:/)).not.toBeInTheDocument()
     })
+
+    // Keep the ★ popup consistent with ResultCard's SuggestedStationBox so a multi-line
+    // winner (e.g. 新宿) shows all lines, not just the row's single line_name.
+    it('should aggregate all line names in the ★ popup for a multi-line winner', () => {
+      const SHINJUKU_WINNER = {
+        station: {
+          id: 4,
+          name: '新宿',
+          line_name: 'JR山手線',
+          operator: 'JR',
+          lat: 35.6896,
+          lng: 139.7006,
+        },
+        totalDistance: 8.2,
+      }
+      const MULTI_LINE_ROWS = [
+        {
+          id: 4,
+          name: '新宿',
+          line_name: 'JR山手線',
+          operator: 'JR',
+          lat: 35.6896,
+          lng: 139.7006,
+          distance_meters: 250,
+        },
+        {
+          id: 5,
+          name: '新宿',
+          line_name: 'JR中央線',
+          operator: 'JR',
+          lat: 35.6898,
+          lng: 139.7004,
+          distance_meters: 260,
+        },
+        {
+          id: 6,
+          name: '新宿',
+          line_name: '小田急小田原線',
+          operator: '小田急',
+          lat: 35.6892,
+          lng: 139.7002,
+          distance_meters: 270,
+        },
+      ]
+      render(
+        <MapView
+          locations={[]}
+          geometricMedian={{ lat: 35.6, lng: 139.7 }}
+          suggestedStation={SHINJUKU_WINNER}
+          medianNearbyStations={MULTI_LINE_ROWS}
+        />
+      )
+      // Scope to the ★ popup (identified by "おすすめ駅:" header) since M1's popup also
+      // shows the same aggregated lines.
+      const suggestedPopup = screen.getByText(/おすすめ駅: 新宿/).closest('[data-testid="popup"]')
+      expect(suggestedPopup).not.toBeNull()
+      expect(suggestedPopup?.textContent).toContain('JR山手線 / JR中央線 / 小田急小田原線')
+    })
   })
 
   describe('focusRequest behavior', () => {
