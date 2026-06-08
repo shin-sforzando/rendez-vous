@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Footer from '@/components/Footer'
 import LocationForm from '@/components/LocationForm'
 import MapView from '@/components/Map'
 import ResultCard from '@/components/ResultCard'
@@ -127,21 +128,24 @@ function App() {
       </header>
 
       <main className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0">
-        {/* Left column: input form + result card (scrollable on desktop) */}
-        <aside className="w-full lg:w-md shrink-0 flex flex-col gap-4 lg:overflow-y-auto overflow-x-hidden">
-          <LocationForm onAdd={handleAddLocation} disabled={isMaxReached} />
-          <ResultCard
-            locations={locations}
-            result={result}
-            onRemove={handleRemoveLocation}
-            centroidNearbyStations={centroidNearby.stations}
-            medianNearbyStations={medianNearby.stations}
-            suggestedStation={suggestedStation}
-            isLoadingNearbyStations={centroidNearby.isLoading || medianNearby.isLoading}
-            onCopyUrl={handleCopyUrl}
-            isCopied={isCopied}
-            onFocusMap={handleFocusMap}
-          />
+        {/* Left column: input form + result card (scrollable on desktop) + desktop-only footer pinned to bottom */}
+        <aside className="w-full lg:w-md shrink-0 flex flex-col lg:overflow-hidden">
+          <div className="flex flex-col gap-4 lg:flex-1 lg:overflow-y-auto overflow-x-hidden">
+            <LocationForm onAdd={handleAddLocation} disabled={isMaxReached} />
+            <ResultCard
+              locations={locations}
+              result={result}
+              onRemove={handleRemoveLocation}
+              centroidNearbyStations={centroidNearby.stations}
+              medianNearbyStations={medianNearby.stations}
+              suggestedStation={suggestedStation}
+              isLoadingNearbyStations={centroidNearby.isLoading || medianNearby.isLoading}
+              onCopyUrl={handleCopyUrl}
+              isCopied={isCopied}
+              onFocusMap={handleFocusMap}
+            />
+          </div>
+          <Footer className="hidden lg:flex mt-4" />
         </aside>
 
         {/* Right column: map (fills remaining space) */}
@@ -157,6 +161,9 @@ function App() {
           />
         </div>
       </main>
+
+      {/* Mobile-only footer at site bottom (desktop footer is inside the left aside) */}
+      <Footer className="flex lg:hidden" />
     </div>
   )
 }
