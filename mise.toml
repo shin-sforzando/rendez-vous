@@ -1,0 +1,4 @@
+# mise — runtime version manager configuration
+# https://mise.jdx.dev
+[tools]
+node = "24"
