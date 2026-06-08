@@ -36,12 +36,17 @@ All notable changes to this project will be documented in this file.
 - 2026-06-06 12:23:09 :sparkles: bump vite to v8 and @vitejs/plugin-react to v6 _by shin-sforzando_
 - 2026-06-06 13:59:23 :sparkles: move CHANGELOG generation from pre-push hook to GitHub Actions _by shin-sforzando_
 - 2026-06-08 09:11:27 :sparkles: add K-medoids station selection and grouping logic _by shin-sforzando_
+- 2026-06-08 11:07:57 :sparkles: update station data _by shin-sforzando_
 
 ### Refactor
 
 - 2026-02-04 13:06:15 :recycle: rename Location.name to Location.label for UI consistency _by shin-sforzando_
 - 2026-02-04 14:28:19 :bulb: improve station grouping logic and error message _by shin-sforzando_
 - 2026-06-06 11:10:54 :recycle: address review feedback on PR #41 _by shin-sforzando_
+
+### Styling
+
+- 2026-06-08 11:09:18 :art: format ResultCard title for better readability _by shin-sforzando_
 
 ### Testing
 
