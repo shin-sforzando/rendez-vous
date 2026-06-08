@@ -67,7 +67,7 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
   return (
     <div data-testid="location-form" className="card bg-base-100 shadow-md">
       <div className="card-body">
-        <h2 className="card-title text-lg">地点を追加</h2>
+        <h2 className="card-title text-lg">出発地（駅）を追加</h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {/* Label (optional) */}
@@ -94,7 +94,7 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
             <input
               id="form-station"
               type="text"
-              placeholder="駅名を入力..."
+              placeholder="駅名を入力…"
               className="input input-bordered w-full"
               value={stationQuery}
               onChange={(e) => {

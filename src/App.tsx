@@ -4,17 +4,30 @@ import MapView from '@/components/Map'
 import ResultCard from '@/components/ResultCard'
 import { useLocationUrlSync } from '@/hooks/useLocationUrlSync'
 import { useNearbyStations } from '@/hooks/useNearbyStations'
-import { centroid, geometricMedian } from '@/lib/geo'
+import { centroid, geometricMedian, selectKMedoidStation } from '@/lib/geo'
 import { buildShareUrl, getInitialLocationsFromUrl } from '@/lib/urlState'
-import type { Location, MeetingPointResult } from '@/types'
+import type { LatLng, Location, MapFocusRequest, MeetingPointResult } from '@/types'
 
 /** Maximum number of locations allowed */
 const MAX_LOCATIONS = 10
+
+/**
+ * Raw nearby station rows fetched per reference point.
+ * Large enough to (a) serve as the K-medoid candidate pool for the Median,
+ * and (b) ensure at least 3 unique station names survive group-by-name even
+ * when the reference point coincides with a multi-line station.
+ */
+const NEARBY_STATION_LIMIT = 20
 
 function App() {
   const [locations, setLocations] = useState<Location[]>(getInitialLocationsFromUrl)
   const [isDark, setIsDark] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+  const [focusRequest, setFocusRequest] = useState<MapFocusRequest | null>(null)
+
+  const handleFocusMap = useCallback((latlng: LatLng) => {
+    setFocusRequest((prev) => ({ latlng, seq: (prev?.seq ?? 0) + 1 }))
+  }, [])
 
   useLocationUrlSync(locations)
 
@@ -25,7 +38,7 @@ function App() {
       window.history.replaceState(null, '', '/')
       return
     }
-    if (window.confirm('登録地点をリセットしていいですか？')) {
+    if (window.confirm('出発地をリセットしていいですか？')) {
       setLocations([])
       window.history.replaceState(null, '', '/')
     }
@@ -46,8 +59,14 @@ function App() {
     }
   }, [locations])
 
-  const centroidNearby = useNearbyStations(result?.centroid ?? null)
-  const medianNearby = useNearbyStations(result?.geometricMedian ?? null)
+  const centroidNearby = useNearbyStations(result?.centroid ?? null, NEARBY_STATION_LIMIT)
+  const medianNearby = useNearbyStations(result?.geometricMedian ?? null, NEARBY_STATION_LIMIT)
+
+  const suggestedStation = useMemo(() => {
+    if (!result || medianNearby.stations.length === 0) return null
+    const participants = result.locations.map((l) => l.latlng)
+    return selectKMedoidStation(participants, medianNearby.stations)
+  }, [result, medianNearby.stations])
 
   const isMaxReached = locations.length >= MAX_LOCATIONS
 
@@ -117,9 +136,11 @@ function App() {
             onRemove={handleRemoveLocation}
             centroidNearbyStations={centroidNearby.stations}
             medianNearbyStations={medianNearby.stations}
+            suggestedStation={suggestedStation}
             isLoadingNearbyStations={centroidNearby.isLoading || medianNearby.isLoading}
             onCopyUrl={handleCopyUrl}
             isCopied={isCopied}
+            onFocusMap={handleFocusMap}
           />
         </aside>
 
@@ -129,6 +150,10 @@ function App() {
             locations={locations}
             centroid={result?.centroid}
             geometricMedian={result?.geometricMedian}
+            suggestedStation={suggestedStation}
+            centroidNearbyStations={centroidNearby.stations}
+            medianNearbyStations={medianNearby.stations}
+            focusRequest={focusRequest}
           />
         </div>
       </main>

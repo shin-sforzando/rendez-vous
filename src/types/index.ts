@@ -26,6 +26,20 @@ export interface NearbyStation extends StationWithCoords {
   distance_meters: number
 }
 
+/** Result of K-medoid selection over candidate stations */
+export interface KMedoidResult {
+  /** Station minimizing the sum of distances to all participants */
+  station: StationWithCoords
+  /** Sum of haversine distances from all participants (km) */
+  totalDistance: number
+}
+
+/** Request to focus the map on a specific point; seq invalidates the effect for repeated clicks */
+export interface MapFocusRequest {
+  latlng: LatLng
+  seq: number
+}
+
 /** Result of meeting point calculation */
 export interface MeetingPointResult {
   /** Centroid (arithmetic mean) of all locations */
