@@ -155,7 +155,8 @@ Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) mus
 
 ## Station Data Import
 
-Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) into Supabase. The dataset is governed by its own terms of use — see [Third-party data](#third-party-data) for details.
+Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) into Supabase.
+The dataset is governed by its own terms of use — see [Third-party data](#third-party-data) for details.
 
 ### Setup
 
