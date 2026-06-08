@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { haversineDistance } from '@/lib/haversine'
 import { groupStationsByName } from '@/lib/stations'
 import type { KMedoidResult, LatLng, Location, MeetingPointResult, NearbyStation } from '@/types'
@@ -99,8 +100,17 @@ function NearbyStationList({
 }
 
 /** Standalone suggestion box shown when the K-medoid winner is not in the displayed nearby list */
-function SuggestedStationBox({ suggestion }: { suggestion: KMedoidResult }) {
+function SuggestedStationBox({
+  suggestion,
+  lines,
+}: {
+  suggestion: KMedoidResult
+  /** Aggregated line names from all rows of the winning station (multi-line stations like 新宿) */
+  lines?: string[]
+}) {
   const { station, totalDistance } = suggestion
+  const displayLines =
+    lines && lines.length > 0 ? lines : station.line_name ? [station.line_name] : []
   return (
     <div data-testid="suggested-station-box" className="mt-2 border-t border-base-300 pt-2">
       <p className="text-xs font-semibold mb-1">
@@ -113,9 +123,9 @@ function SuggestedStationBox({ suggestion }: { suggestion: KMedoidResult }) {
           合計 <strong>{formatDistance(totalDistance)}</strong>
         </span>
       </div>
-      {station.line_name && (
+      {displayLines.length > 0 && (
         <p className="text-[11px] text-base-content/50 ml-0.5 mt-0.5 leading-relaxed">
-          {station.line_name}
+          {displayLines.join(' / ')}
         </p>
       )}
     </div>
@@ -135,8 +145,31 @@ function ResultCard({
   onFocusMap,
 }: ResultCardProps) {
   const suggestedName = suggestedStation?.station.name ?? null
+
+  // Group once here so both isSuggestionInList and SuggestedStationBox's multi-line
+  // aggregation read from the same canonical view of the median nearby data.
+  const groupedMedianAll = useMemo(
+    () => groupStationsByName(medianNearbyStations ?? []),
+    [medianNearbyStations]
+  )
+
+  // Compare against the actually-displayed top-N grouped names (not the raw rows).
+  // The raw pool has up to 20 rows incl. multi-line duplicates; the rendered list
+  // is grouped+sliced, so checking the raw rows can yield a false positive when
+  // the K-medoid winner is in the pool but not in the displayed top-N.
   const isSuggestionInList =
-    suggestedName != null && (medianNearbyStations ?? []).some((s) => s.name === suggestedName)
+    suggestedName != null &&
+    groupedMedianAll.slice(0, NEARBY_DISPLAY_LIMIT).some((g) => g.name === suggestedName)
+
+  // Aggregated line names for the winner (e.g. 新宿 with 山手線/中央線/小田急).
+  const suggestedStationLines = useMemo(
+    () =>
+      suggestedName == null
+        ? undefined
+        : groupedMedianAll.find((g) => g.name === suggestedName)?.lines,
+    [suggestedName, groupedMedianAll]
+  )
+
   const { centroid, geometricMedian } = result ?? {}
 
   const centroidTotalDist =
@@ -275,7 +308,10 @@ function ResultCard({
                   />
                 )}
                 {suggestedStation && !isSuggestionInList && (
-                  <SuggestedStationBox suggestion={suggestedStation} />
+                  <SuggestedStationBox
+                    suggestion={suggestedStation}
+                    lines={suggestedStationLines}
+                  />
                 )}
               </div>
             </div>

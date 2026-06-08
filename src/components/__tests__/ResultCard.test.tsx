@@ -571,6 +571,156 @@ describe('ResultCard', () => {
       expect(screen.queryByTestId('suggested-badge')).not.toBeInTheDocument()
       expect(screen.queryByTestId('suggested-station-box')).not.toBeInTheDocument()
     })
+
+    // Regression: previously isSuggestionInList compared against the raw 20-row pool, so a
+    // winner that was in the pool but outside the grouped top-3 display erroneously hid
+    // SuggestedStationBox (review feedback on PR #48).
+    it('should render SuggestedStationBox when the winner is in the raw rows but outside the displayed top-N', () => {
+      // 4 distinct names; only the first 3 are displayed after grouping
+      const RAW_FOUR_NAMES: NearbyStation[] = [
+        {
+          id: 1,
+          name: '駅A',
+          line_name: 'A線',
+          operator: 'X',
+          lat: 35.0,
+          lng: 139.0,
+          distance_meters: 100,
+        },
+        {
+          id: 2,
+          name: '駅B',
+          line_name: 'B線',
+          operator: 'X',
+          lat: 35.1,
+          lng: 139.1,
+          distance_meters: 200,
+        },
+        {
+          id: 3,
+          name: '駅C',
+          line_name: 'C線',
+          operator: 'X',
+          lat: 35.2,
+          lng: 139.2,
+          distance_meters: 300,
+        },
+        // 4th distinct name — outside the top-3 displayed list
+        {
+          id: 4,
+          name: '代田橋',
+          line_name: '京王線',
+          operator: '京王',
+          lat: 35.67,
+          lng: 139.66,
+          distance_meters: 500,
+        },
+      ]
+      const DAITABASHI_STATION: StationWithCoords = {
+        id: 4,
+        name: '代田橋',
+        line_name: '京王線',
+        operator: '京王',
+        lat: 35.67,
+        lng: 139.66,
+      }
+      const suggestion: KMedoidResult = { station: DAITABASHI_STATION, totalDistance: 10.5 }
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          medianNearbyStations={RAW_FOUR_NAMES}
+          suggestedStation={suggestion}
+        />
+      )
+
+      const box = screen.getByTestId('suggested-station-box')
+      expect(box).toBeInTheDocument()
+      expect(within(box).getByText('代田橋')).toBeInTheDocument()
+    })
+
+    it('should aggregate all line names for a multi-line winner in SuggestedStationBox', () => {
+      // 新宿 appears 3 times (different lines). Place it outside top-3 by giving the
+      // first 3 unique stations smaller distances.
+      const MULTI_LINE_WINNER_OUTSIDE: NearbyStation[] = [
+        {
+          id: 1,
+          name: '駅A',
+          line_name: 'A線',
+          operator: 'X',
+          lat: 35.0,
+          lng: 139.0,
+          distance_meters: 100,
+        },
+        {
+          id: 2,
+          name: '駅B',
+          line_name: 'B線',
+          operator: 'X',
+          lat: 35.1,
+          lng: 139.1,
+          distance_meters: 200,
+        },
+        {
+          id: 3,
+          name: '駅C',
+          line_name: 'C線',
+          operator: 'X',
+          lat: 35.2,
+          lng: 139.2,
+          distance_meters: 300,
+        },
+        {
+          id: 4,
+          name: '新宿',
+          line_name: 'JR山手線',
+          operator: 'JR',
+          lat: 35.6896,
+          lng: 139.7006,
+          distance_meters: 500,
+        },
+        {
+          id: 5,
+          name: '新宿',
+          line_name: 'JR中央線',
+          operator: 'JR',
+          lat: 35.6898,
+          lng: 139.7004,
+          distance_meters: 510,
+        },
+        {
+          id: 6,
+          name: '新宿',
+          line_name: '小田急小田原線',
+          operator: '小田急',
+          lat: 35.6892,
+          lng: 139.7002,
+          distance_meters: 520,
+        },
+      ]
+      const SHINJUKU_WINNER: StationWithCoords = {
+        id: 4,
+        name: '新宿',
+        line_name: 'JR山手線',
+        operator: 'JR',
+        lat: 35.6896,
+        lng: 139.7006,
+      }
+      const suggestion: KMedoidResult = { station: SHINJUKU_WINNER, totalDistance: 8.2 }
+      render(
+        <ResultCard
+          locations={LOCATIONS}
+          result={MOCK_RESULT}
+          medianNearbyStations={MULTI_LINE_WINNER_OUTSIDE}
+          suggestedStation={suggestion}
+        />
+      )
+
+      const box = screen.getByTestId('suggested-station-box')
+      expect(within(box).getByText(/JR山手線/)).toBeInTheDocument()
+      expect(within(box).getByText(/JR中央線/)).toBeInTheDocument()
+      expect(within(box).getByText(/小田急/)).toBeInTheDocument()
+    })
   })
 
   describe('copy URL button', () => {
