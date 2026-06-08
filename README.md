@@ -3,7 +3,7 @@
 <!-- Badges -->
 
 [![Last Commit](https://img.shields.io/github/last-commit/shin-sforzando/rendez-vous)](https://github.com/shin-sforzando/rendez-vous/graphs/commit-activity)
-[![CI/CD](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml/badge.svg)](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml)
+[![CI](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml/badge.svg)](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 <!-- Synopsis -->
