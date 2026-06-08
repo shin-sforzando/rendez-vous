@@ -1,5 +1,9 @@
 import { haversineDistance } from '@/lib/haversine'
-import type { Location, MeetingPointResult, NearbyStation } from '@/types'
+import { groupStationsByName } from '@/lib/stations'
+import type { KMedoidResult, LatLng, Location, MeetingPointResult, NearbyStation } from '@/types'
+
+/** Maximum number of distinct nearby stations (by name) shown in each list */
+const NEARBY_DISPLAY_LIMIT = 3
 
 interface ResultCardProps {
   /** All registered locations */
@@ -12,12 +16,16 @@ interface ResultCardProps {
   centroidNearbyStations?: NearbyStation[]
   /** Nearby stations for the geometric median */
   medianNearbyStations?: NearbyStation[]
+  /** K-medoid suggested station (minimizes total distance from all participants) */
+  suggestedStation?: KMedoidResult | null
   /** Whether nearby station data is loading */
   isLoadingNearbyStations?: boolean
   /** Callback to copy share URL to clipboard */
   onCopyUrl?: () => void
   /** Whether the URL was just copied */
   isCopied?: boolean
+  /** Request the map to fly to a specific point (e.g., on badge click) */
+  onFocusMap?: (latlng: LatLng) => void
 }
 
 /** Format distance in km for display */
@@ -28,52 +36,26 @@ function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`
 }
 
-/** Info icon for tooltip hover target */
-function InfoTip({ tip }: { tip: string }) {
-  return (
-    <div className="tooltip tooltip-bottom" data-tip={tip}>
-      <sup className="text-xs opacity-60 cursor-help ml-0.5" role="img" aria-label={tip}>
-        &#9432;
-      </sup>
-    </div>
-  )
-}
-
-/** Group flat station rows by name, preserving order of first appearance */
-function groupStationsByName(
-  stations: NearbyStation[]
-): { name: string; distance_meters: number; lines: string[] }[] {
-  const groups = new Map<string, { distance_meters: number; lines: string[] }>()
-  for (const s of stations) {
-    const existing = groups.get(s.name)
-    if (existing) {
-      if (s.distance_meters < existing.distance_meters) {
-        existing.distance_meters = s.distance_meters
-      }
-      if (s.line_name && !existing.lines.includes(s.line_name)) {
-        existing.lines.push(s.line_name)
-      }
-    } else {
-      groups.set(s.name, {
-        distance_meters: s.distance_meters,
-        lines: s.line_name ? [s.line_name] : [],
-      })
-    }
-  }
-  return Array.from(groups, ([name, data]) => ({ name, ...data }))
-}
-
 /** Nearby station list displayed within C/M cards */
 function NearbyStationList({
   stations,
   isLoading,
   testId,
+  labelPrefix,
+  badgeColorClass,
+  onFocus,
 }: {
   stations: NearbyStation[]
   isLoading: boolean
   testId: string
+  /** Prefix used for the rank badge (e.g., 'C' or 'M') to match map markers */
+  labelPrefix: 'C' | 'M'
+  /** DaisyUI badge color modifier class (e.g., 'badge-warning', 'badge-error') */
+  badgeColorClass: string
+  /** Click handler that focuses the map on the grouped station's coords */
+  onFocus?: (latlng: LatLng) => void
 }) {
-  const grouped = groupStationsByName(stations)
+  const grouped = groupStationsByName(stations).slice(0, NEARBY_DISPLAY_LIMIT)
 
   return (
     <div data-testid={testId} className="mt-2 border-t border-base-300 pt-2">
@@ -84,23 +66,57 @@ function NearbyStationList({
         <p className="text-xs text-base-content/50">駅が見つかりませんでした</p>
       ) : (
         <ul className="flex flex-col gap-1.5">
-          {grouped.map((group, i) => (
-            <li key={group.name}>
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className="badge badge-outline badge-xs shrink-0">{i + 1}</span>
-                <span className="font-medium">{group.name}</span>
-                <span className="ml-auto shrink-0 tabular-nums">
-                  {formatDistance(group.distance_meters / 1000)}
-                </span>
-              </div>
-              {group.lines.length > 0 && (
-                <p className="text-[11px] text-base-content/50 ml-5 mt-0.5 leading-relaxed">
-                  {group.lines.join(' / ')}
-                </p>
-              )}
-            </li>
-          ))}
+          {grouped.map((group, i) => {
+            const label = `${labelPrefix}${i + 1}`
+            return (
+              <li key={group.name}>
+                <button
+                  type="button"
+                  onClick={() => onFocus?.({ lat: group.lat, lng: group.lng })}
+                  aria-label={`地図を${group.name}に移動`}
+                  className="w-full text-left cursor-pointer hover:bg-base-300/50 rounded px-1 -mx-1 py-0.5 transition-colors block"
+                >
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <span className={`badge ${badgeColorClass} badge-xs shrink-0`}>{label}</span>
+                    <span className="font-medium">{group.name}</span>
+                    <span className="ml-auto shrink-0 tabular-nums">
+                      {formatDistance(group.distance_meters / 1000)}
+                    </span>
+                  </span>
+                  {group.lines.length > 0 && (
+                    <span className="block text-[11px] text-base-content/50 ml-7 mt-0.5 leading-relaxed">
+                      {group.lines.join(' / ')}
+                    </span>
+                  )}
+                </button>
+              </li>
+            )
+          })}
         </ul>
+      )}
+    </div>
+  )
+}
+
+/** Standalone suggestion box shown when the K-medoid winner is not in the displayed nearby list */
+function SuggestedStationBox({ suggestion }: { suggestion: KMedoidResult }) {
+  const { station, totalDistance } = suggestion
+  return (
+    <div data-testid="suggested-station-box" className="mt-2 border-t border-base-300 pt-2">
+      <p className="text-xs font-semibold mb-1">
+        <span className="badge badge-accent badge-xs mr-1">おすすめ</span>
+        全員からの合計距離が最小の駅
+      </p>
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="font-medium">{station.name}</span>
+        <span className="ml-auto shrink-0 tabular-nums">
+          合計 <strong>{formatDistance(totalDistance)}</strong>
+        </span>
+      </div>
+      {station.line_name && (
+        <p className="text-[11px] text-base-content/50 ml-0.5 mt-0.5 leading-relaxed">
+          {station.line_name}
+        </p>
       )}
     </div>
   )
@@ -112,10 +128,15 @@ function ResultCard({
   onRemove,
   centroidNearbyStations,
   medianNearbyStations,
+  suggestedStation,
   isLoadingNearbyStations,
   onCopyUrl,
   isCopied,
+  onFocusMap,
 }: ResultCardProps) {
+  const suggestedName = suggestedStation?.station.name ?? null
+  const isSuggestionInList =
+    suggestedName != null && (medianNearbyStations ?? []).some((s) => s.name === suggestedName)
   const { centroid, geometricMedian } = result ?? {}
 
   const centroidTotalDist =
@@ -134,12 +155,14 @@ function ResultCard({
     <div data-testid="result-card" className="card bg-base-100 shadow-md">
       <div className="card-body">
         <h2 className="card-title text-lg">
-          {result ? '計算結果' : `登録済み地点（${locations.length}）`}
+          {result ? '計算結果' : `登録済み出発地（${locations.length}）`}
         </h2>
 
         {/* Empty state */}
         {locations.length === 0 && (
-          <p className="text-sm text-base-content/50">地点を追加すると、ここに一覧が表示されます</p>
+          <p className="text-sm text-base-content/50">
+            出発地を追加すると、ここに一覧が表示されます
+          </p>
         )}
 
         {/* Centroid & Geometric Median summary (only when calculated) */}
@@ -151,13 +174,38 @@ function ResultCard({
             <div className="flex flex-col gap-4">
               {/* Centroid */}
               <div className="bg-base-200 border-l-4 border-warning rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="badge badge-warning">C</span>
-                  <h3 className="font-semibold">
-                    中間地点
-                    <InfoTip tip="すべての座標の平均値。重心（Centroid）とも呼ばれる。" />
-                  </h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => onFocusMap?.(centroid)}
+                    aria-label="地図を中間地点に移動"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <span className="badge badge-warning">C</span>
+                    <span className="font-semibold">中間地点</span>
+                  </button>
                 </div>
+                <p className="text-[11px] text-base-content/50 leading-relaxed mb-2">
+                  全座標の
+                  <a
+                    href="https://ja.wikipedia.org/wiki/%E7%AE%97%E8%A1%93%E5%B9%B3%E5%9D%87"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    算術平均
+                  </a>
+                  。
+                  <a
+                    href="https://ja.wikipedia.org/wiki/%E9%87%8D%E5%BF%83"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    重心
+                  </a>
+                  （Centroid）とも呼ばれる。
+                </p>
                 <p className="text-sm font-mono">
                   {centroid.lat.toFixed(6)}, {centroid.lng.toFixed(6)}
                 </p>
@@ -169,19 +217,47 @@ function ResultCard({
                     stations={centroidNearbyStations}
                     isLoading={isLoadingNearbyStations ?? false}
                     testId="nearby-stations-centroid"
+                    labelPrefix="C"
+                    badgeColorClass="badge-warning"
+                    onFocus={onFocusMap}
                   />
                 )}
               </div>
 
               {/* Geometric Median */}
               <div className="bg-base-200 border-l-4 border-error rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="badge badge-error">M</span>
-                  <h3 className="font-semibold">
-                    最適地点
-                    <InfoTip tip="各点からの直線距離の和が最小となる地点。幾何中央値、ユークリッド最小和点、トリチェリ点とも呼ばれる。" />
-                  </h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => onFocusMap?.(geometricMedian)}
+                    aria-label="地図を最適地点に移動"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                  >
+                    <span className="badge badge-error">M</span>
+                    <span className="font-semibold">最適地点</span>
+                  </button>
                 </div>
+                <p className="text-[11px] text-base-content/50 leading-relaxed mb-2">
+                  各点からの直線距離の和が最小となる地点。一般には
+                  <a
+                    href="https://en.wikipedia.org/wiki/Geometric_median"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    幾何中央値（Geometric median）
+                  </a>
+                  、三角形の場合は
+                  <a
+                    href="https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A7%E3%83%AB%E3%83%9E%E3%83%BC%E7%82%B9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    フェルマー点
+                  </a>
+                  と呼ばれる。
+                </p>
                 <p className="text-sm font-mono">
                   {geometricMedian.lat.toFixed(6)}, {geometricMedian.lng.toFixed(6)}
                 </p>
@@ -193,7 +269,13 @@ function ResultCard({
                     stations={medianNearbyStations}
                     isLoading={isLoadingNearbyStations ?? false}
                     testId="nearby-stations-median"
+                    labelPrefix="M"
+                    badgeColorClass="badge-error"
+                    onFocus={onFocusMap}
                   />
+                )}
+                {suggestedStation && !isSuggestionInList && (
+                  <SuggestedStationBox suggestion={suggestedStation} />
                 )}
               </div>
             </div>
@@ -202,15 +284,20 @@ function ResultCard({
         {/* Per-location list */}
         {locations.length > 0 && (
           <div className={result ? 'mt-4' : ''}>
-            {result && <h3 className="font-semibold mb-2">各地点からの距離</h3>}
+            {result && <h3 className="font-semibold mb-2">各出発地からの距離</h3>}
             <ul className="flex flex-col gap-2">
               {locations.map((location, index) => (
                 <li key={location.id} className="bg-base-200 rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => onFocusMap?.(location.latlng)}
+                      aria-label={`地図を${location.label}に移動`}
+                      className="flex items-center gap-1.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity text-left flex-1"
+                    >
                       <span className="badge badge-primary badge-sm shrink-0">{index + 1}</span>
                       <span className="text-sm font-medium truncate">{location.label}</span>
-                    </div>
+                    </button>
                     {onRemove && (
                       <button
                         type="button"

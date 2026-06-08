@@ -1,4 +1,4 @@
-import type { LatLng } from '@/types'
+import type { KMedoidResult, LatLng, StationWithCoords } from '@/types'
 import { haversineDistance } from './haversine'
 
 /**
@@ -87,4 +87,36 @@ export function geometricMedian(points: LatLng[], options?: WeiszfeldOptions): L
   }
 
   return estimate
+}
+
+/**
+ * Select the station from candidates that minimizes the sum of distances
+ * to all participants (discrete K-medoid).
+ * Returns null when participants or candidates is empty.
+ * On ties, the candidate appearing earlier in the array wins (typically
+ * the one closest to the Median when candidates come from find_nearby_stations).
+ */
+export function selectKMedoidStation(
+  participants: LatLng[],
+  candidates: StationWithCoords[]
+): KMedoidResult | null {
+  if (participants.length === 0 || candidates.length === 0) {
+    return null
+  }
+
+  let best: KMedoidResult | null = null
+
+  for (const candidate of candidates) {
+    const candidatePoint: LatLng = { lat: candidate.lat, lng: candidate.lng }
+    let totalDistance = 0
+    for (const participant of participants) {
+      totalDistance += haversineDistance(candidatePoint, participant)
+    }
+
+    if (best === null || totalDistance < best.totalDistance) {
+      best = { station: candidate, totalDistance }
+    }
+  }
+
+  return best
 }

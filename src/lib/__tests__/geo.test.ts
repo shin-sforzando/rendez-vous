@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { LatLng } from '@/types'
-import { centroid, geometricMedian } from '../geo'
+import type { LatLng, StationWithCoords } from '@/types'
+import { centroid, geometricMedian, selectKMedoidStation } from '../geo'
 import { haversineDistance } from '../haversine'
 
 // Reference points
@@ -283,5 +283,137 @@ describe('edge case: duplicate points (weighted)', () => {
     // Should be very close to Osaka (the dominant point)
     expect(distToOsaka).toBeLessThan(50)
     expect(distToOsaka).toBeLessThan(distToTokyo)
+  })
+})
+
+describe('selectKMedoidStation', () => {
+  const SHINJUKU: StationWithCoords = {
+    id: 1,
+    name: '新宿',
+    line_name: 'JR山手線',
+    operator: 'JR東日本',
+    lat: 35.6896,
+    lng: 139.7006,
+  }
+  const SHIBUYA: StationWithCoords = {
+    id: 2,
+    name: '渋谷',
+    line_name: 'JR山手線',
+    operator: 'JR東日本',
+    lat: 35.658,
+    lng: 139.7016,
+  }
+  const TOKYO_ST: StationWithCoords = {
+    id: 3,
+    name: '東京',
+    line_name: 'JR山手線',
+    operator: 'JR東日本',
+    lat: 35.6812,
+    lng: 139.7671,
+  }
+  const IKEBUKURO: StationWithCoords = {
+    id: 4,
+    name: '池袋',
+    line_name: 'JR山手線',
+    operator: 'JR東日本',
+    lat: 35.7295,
+    lng: 139.7109,
+  }
+  const SHINAGAWA: StationWithCoords = {
+    id: 5,
+    name: '品川',
+    line_name: 'JR山手線',
+    operator: 'JR東日本',
+    lat: 35.6284,
+    lng: 139.7387,
+  }
+  const YAMANOTE = [SHINJUKU, SHIBUYA, TOKYO_ST, IKEBUKURO, SHINAGAWA]
+
+  it('should return null for empty participants', () => {
+    const result = selectKMedoidStation([], YAMANOTE)
+    expect(result).toBeNull()
+  })
+
+  it('should return null for empty candidates', () => {
+    const result = selectKMedoidStation([TOKYO], [])
+    expect(result).toBeNull()
+  })
+
+  it('should return the station at zero distance when a single participant is on a candidate', () => {
+    // Participant sits exactly on Shibuya — Shibuya wins with totalDistance 0
+    const participantAtShibuya: LatLng = { lat: SHIBUYA.lat, lng: SHIBUYA.lng }
+    const result = selectKMedoidStation([participantAtShibuya], YAMANOTE)
+    expect(result?.station.id).toBe(SHIBUYA.id)
+    expect(result?.totalDistance).toBeCloseTo(0, 5)
+  })
+
+  it('should select the station minimizing sum of distances for clustered participants', () => {
+    // Three participants tightly clustered around Shibuya
+    const participants: LatLng[] = [
+      { lat: 35.658, lng: 139.7016 },
+      { lat: 35.66, lng: 139.7 },
+      { lat: 35.656, lng: 139.703 },
+    ]
+    const result = selectKMedoidStation(participants, YAMANOTE)
+    expect(result?.station.id).toBe(SHIBUYA.id)
+  })
+
+  it('should prefer a station with lower total over one closer to the first participant', () => {
+    // Constructed case: a candidate that is very close to P1 alone, but
+    // has worse total distance once outliers are included
+    const P1: LatLng = { lat: 0, lng: 0 }
+    const P2: LatLng = { lat: 0, lng: 0.5 }
+    const P3: LatLng = { lat: 0, lng: 5 } // far outlier
+    const closeToP1: StationWithCoords = {
+      id: 100,
+      name: 'CloseToP1',
+      line_name: null,
+      operator: null,
+      lat: 0,
+      lng: 0.01,
+    }
+    const middle: StationWithCoords = {
+      id: 101,
+      name: 'Middle',
+      line_name: null,
+      operator: null,
+      lat: 0,
+      lng: 0.6,
+    }
+    const result = selectKMedoidStation([P1, P2, P3], [closeToP1, middle])
+    expect(result?.station.id).toBe(middle.id)
+  })
+
+  it('should compute totalDistance as the sum of haversine distances', () => {
+    const participants = [TOKYO, OSAKA]
+    const candidatePoint: LatLng = { lat: SHINJUKU.lat, lng: SHINJUKU.lng }
+    const expectedSum =
+      haversineDistance(candidatePoint, TOKYO) + haversineDistance(candidatePoint, OSAKA)
+
+    const result = selectKMedoidStation(participants, [SHINJUKU])
+    expect(result?.totalDistance).toBeCloseTo(expectedSum, 5)
+  })
+
+  it('should break ties by returning the candidate that appears first', () => {
+    // Two candidates equidistant from a single participant — earlier wins
+    const center: LatLng = { lat: 0, lng: 0 }
+    const east: StationWithCoords = {
+      id: 200,
+      name: 'East',
+      line_name: null,
+      operator: null,
+      lat: 0,
+      lng: 0.1,
+    }
+    const west: StationWithCoords = {
+      id: 201,
+      name: 'West',
+      line_name: null,
+      operator: null,
+      lat: 0,
+      lng: -0.1,
+    }
+    const result = selectKMedoidStation([center], [east, west])
+    expect(result?.station.id).toBe(east.id)
   })
 })

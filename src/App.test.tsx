@@ -23,6 +23,8 @@ vi.mock('react-leaflet', () => ({
     fitBounds: vi.fn(),
     invalidateSize: vi.fn(),
     getContainer: () => ({ clientWidth: 400, clientHeight: 300 }),
+    flyTo: vi.fn(),
+    getZoom: vi.fn(() => 6),
   }),
 }))
 
@@ -106,7 +108,7 @@ describe('App', () => {
 
     it('should show empty state in ResultCard when no locations', () => {
       render(<App />)
-      expect(screen.getByText('登録済み地点（0）')).toBeInTheDocument()
+      expect(screen.getByText('登録済み出発地（0）')).toBeInTheDocument()
     })
 
     it('should render theme toggle', () => {
@@ -122,7 +124,7 @@ describe('App', () => {
 
       const resultCard = screen.getByTestId('result-card')
       expect(within(resultCard).getByText('東京駅')).toBeInTheDocument()
-      expect(screen.getByText('登録済み地点（1）')).toBeInTheDocument()
+      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
     })
 
     it('should add a location via station search', () => {
@@ -152,7 +154,7 @@ describe('App', () => {
       render(<App />)
       addLocationViaForm('東京駅', '35.6812', '139.7671')
 
-      expect(screen.getByText('登録済み地点（1）')).toBeInTheDocument()
+      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
       expect(screen.queryByText('計算結果')).not.toBeInTheDocument()
     })
   })
@@ -210,7 +212,7 @@ describe('App', () => {
       fireEvent.click(screen.getByLabelText('東京駅を削除'))
 
       expect(screen.queryByText('計算結果')).not.toBeInTheDocument()
-      expect(screen.getByText('登録済み地点（1）')).toBeInTheDocument()
+      expect(screen.getByText('登録済み出発地（1）')).toBeInTheDocument()
     })
   })
 
@@ -264,7 +266,7 @@ describe('App', () => {
       render(<App />)
 
       // The hook should have been called with null for both centroid and median
-      expect(mockUseNearbyStations).toHaveBeenCalledWith(null)
+      expect(mockUseNearbyStations).toHaveBeenCalledWith(null, expect.any(Number))
     })
 
     it('should call useNearbyStations with coordinates when result exists', () => {
@@ -301,7 +303,7 @@ describe('App', () => {
 
       fireEvent.click(screen.getByLabelText('ホームに戻る'))
 
-      expect(confirmMock).toHaveBeenCalledWith('登録地点をリセットしていいですか？')
+      expect(confirmMock).toHaveBeenCalledWith('出発地をリセットしていいですか？')
       vi.unstubAllGlobals()
     })
 
