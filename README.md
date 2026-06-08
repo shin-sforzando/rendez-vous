@@ -3,6 +3,7 @@
 <!-- Badges -->
 
 [![Last Commit](https://img.shields.io/github/last-commit/shin-sforzando/rendez-vous)](https://github.com/shin-sforzando/rendez-vous/graphs/commit-activity)
+[![CI](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml/badge.svg)](https://github.com/shin-sforzando/rendez-vous/actions/workflows/ci.yml)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 <!-- Synopsis -->
@@ -24,23 +25,25 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
   - [Setup](#setup)
   - [Usage](#usage)
 - [Misc](#misc)
+  - [License](#license)
+    - [Third-party data](#third-party-data)
 
 ## Development Setup
 
 ### Prerequisites
 
-- Node.js 24+
-- npm
+- [mise](https://mise.jdx.dev) — manages runtime versions declared in `mise.toml` (currently Node.js 24)
 - [git-secret](https://git-secret.io/) (for managing sensitive files)
 - [direnv](https://direnv.net/) (optional, for automatic environment variable loading)
 
 ### Initial Setup
 
-1. Clone the repository and install dependencies:
+1. Clone the repository, install runtimes via mise, then install npm dependencies:
 
    ```bash
    git clone https://github.com/shin-sforzando/rendez-vous.git
    cd rendez-vous
+   mise install   # installs Node.js (and any future tools) declared in mise.toml
    npm install
    ```
 
@@ -152,7 +155,7 @@ Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) mus
 
 ## Station Data Import
 
-Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) into Supabase.
+Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) into Supabase. The dataset is governed by its own terms of use — see [Third-party data](#third-party-data) for details.
 
 ### Setup
 
@@ -183,3 +186,12 @@ The script is idempotent: re-running it will skip stations that already exist in
 ## Misc
 
 This repository is [Commitizen](https://commitizen.github.io/cz-cli/) friendly, following [GitHub flow](https://docs.github.com/en/get-started/quickstart/github-flow).
+
+### License
+
+This project's source code is licensed under the [MIT License](LICENSE).
+
+#### Third-party data
+
+Railway station data is derived from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html) provided by the Ministry of Land, Infrastructure, Transport and Tourism (MLIT) of Japan, and its use is governed by the [国土数値情報 利用約款](https://nlftp.mlit.go.jp/ksj/other/agreement.html).
+Attribution is required by that agreement; the original source is credited above.
