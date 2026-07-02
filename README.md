@@ -60,11 +60,12 @@ runs with `npm install && npm run dev`.
 
 ### Pre-commit Hooks
 
-This project uses [Husky](https://typicode.github.io/husky/) to manage Git hooks. The following checks run automatically before each commit:
+This project uses [Husky](https://typicode.github.io/husky/) to manage Git hooks. The following checks run automatically before each commit, in order:
 
-1. **Biome**: Code quality checks (linting + formatting)
-2. **TypeScript**: Type checking
+1. **Biome**: Linting + formatting (`biome check --write`); any auto-fixes on staged files are re-staged
+2. **TypeScript**: Type checking (`tsc --noEmit`)
 3. **Vitest**: Test execution
+4. **Build**: Production build verification (`vite build`)
 
 If any check fails, the commit will be blocked. Fix the issues and try again.
 
