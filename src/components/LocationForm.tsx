@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useStationSearch } from '@/hooks/useStationSearch'
-import type { Location } from '@/types'
-import type { StationWithCoords } from '@/types/database'
+import type { Location, StationWithCoords } from '@/types'
 
 interface LocationFormProps {
   /** Callback when a location is added */
@@ -21,7 +20,7 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
   const [lng, setLng] = useState('')
   const [selectedStation, setSelectedStation] = useState<StationWithCoords | null>(null)
 
-  const { stations, isLoading, error, isUsingMockData } = useStationSearch(stationQuery)
+  const { stations, isLoading, error } = useStationSearch(stationQuery)
 
   function handleStationSelect(station: StationWithCoords) {
     setSelectedStation(station)
@@ -105,12 +104,6 @@ function LocationForm({ onAdd, disabled = false }: LocationFormProps) {
               aria-label="駅名検索"
             />
           </div>
-
-          {isUsingMockData && (
-            <div className="text-sm text-warning">
-              Supabase未設定のため、サンプルデータを使用しています
-            </div>
-          )}
 
           {error && (
             <div className="text-sm text-error" role="alert">

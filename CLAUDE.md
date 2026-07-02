@@ -38,13 +38,14 @@
 | フォーマッター/リンター | Biome.js |
 | 地図ライブラリ | Leaflet + react-leaflet |
 | 地図タイル | OpenStreetMap |
-| バックエンド | Supabase (PostgreSQL + PostGIS) |
+| 駅データ | 静的JSON（`public/stations.json`、ビルド時生成・Pages配信） |
 | デプロイ | Cloudflare Pages |
 | URL | <https://rendez-vous.pages.dev> |
 
+バックエンドDBは持たない。駅名検索・最寄り駅検索はフロントで静的データに対して実行する（`src/lib/stationData.ts`）。駅データは `npm run generate:stations <geojson>` で `public/stations.json` を再生成する。
+
 ## 参考リンク
 
-- [Supabase PostGIS ドキュメント](https://supabase.com/docs/guides/database/extensions/postgis)
 - [国土数値情報 駅データ](https://nlftp.mlit.go.jp/ksj/)
 - [Leaflet ドキュメント](https://leafletjs.com/)
 - [DaisyUI コンポーネント](https://daisyui.com/components/)

@@ -6,7 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/.vscode", "!**/coverage"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.vscode",
+      "!**/coverage",
+      "!public/stations.json"
+    ]
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {

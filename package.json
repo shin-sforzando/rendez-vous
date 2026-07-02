@@ -17,11 +17,10 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "import:stations": "tsx scripts/import-stations.ts",
+    "generate:stations": "tsx scripts/generate-stations.ts",
     "prepare": "husky"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

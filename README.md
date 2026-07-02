@@ -16,12 +16,10 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
   - [Prerequisites](#prerequisites)
   - [Initial Setup](#initial-setup)
   - [Environment Variables](#environment-variables)
-    - [For New Developers](#for-new-developers)
-    - [Updating Secrets](#updating-secrets)
   - [Pre-commit Hooks](#pre-commit-hooks)
   - [Development Commands](#development-commands)
 - [Deployment](#deployment)
-- [Station Data Import](#station-data-import)
+- [Station Data Generation](#station-data-generation)
   - [Setup](#setup)
   - [Usage](#usage)
 - [Misc](#misc)
@@ -33,8 +31,7 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
 ### Prerequisites
 
 - [mise](https://mise.jdx.dev) — manages runtime versions declared in `mise.toml` (currently Node.js 24)
-- [git-secret](https://git-secret.io/) (for managing sensitive files)
-- [direnv](https://direnv.net/) (optional, for automatic environment variable loading)
+- [direnv](https://direnv.net/) (optional, adds `node_modules/.bin` to `PATH` via `.envrc`)
 
 ### Initial Setup
 
@@ -47,16 +44,9 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
    npm install
    ```
 
-2. Set up environment variables with git-secret:
+   The app needs no environment variables to run, so setup is complete after `npm install`.
 
-   ```bash
-   # Decrypt secret files (requires GPG key access)
-   git secret reveal
-   ```
-
-   This will create `.env.local` with the necessary environment variables.
-
-3. (Optional) Enable direnv for automatic environment loading:
+2. (Optional) Enable direnv for the `PATH` convenience in `.envrc`:
 
    ```bash
    direnv allow
@@ -64,54 +54,17 @@ A web app that finds the optimal meeting spot for groups by calculating both cen
 
 ### Environment Variables
 
-The following environment variables are required in `.env.local`:
-
-| Variable | Description |
-| -------- | ----------- |
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_...`) |
-| `SUPABASE_SECRET_KEY` | Supabase secret key (`sb_secret_...`, for station data import only) |
-
-This project uses **git-secret** to manage sensitive information.
-
-#### For New Developers
-
-If this is your first time setting up the project:
-
-1. Ask the repository owner to add your GPG key:
-
-   ```bash
-   # Repository owner runs this:
-   git secret tell your-email@example.com
-   ```
-
-2. Decrypt the secrets:
-
-   ```bash
-   git secret reveal
-   ```
-
-3. Edit `.env.local` if needed with actual values
-
-#### Updating Secrets
-
-When you modify `.env.local`:
-
-1. The pre-commit hook will automatically encrypt it
-2. Or manually encrypt:
-
-   ```bash
-   git secret hide
-   ```
+The application requires **no runtime environment variables**. Station data is served as a static
+asset (`public/stations.json`), so there is no backend or API key to configure — a fresh checkout
+runs with `npm install && npm run dev`.
 
 ### Pre-commit Hooks
 
 This project uses [Husky](https://typicode.github.io/husky/) to manage Git hooks. The following checks run automatically before each commit:
 
-1. **git-secret encryption**: Automatically encrypts modified secret files
-2. **Biome**: Code quality checks (linting + formatting)
-3. **TypeScript**: Type checking
-4. **Vitest**: Test execution
+1. **Biome**: Code quality checks (linting + formatting)
+2. **TypeScript**: Type checking
+3. **Vitest**: Test execution
 
 If any check fails, the commit will be blocked. Fix the issues and try again.
 
@@ -151,12 +104,17 @@ This project is deployed on [Cloudflare Pages](https://pages.cloudflare.com/). P
 - **Build command**: `npm run build`
 - **Output directory**: `dist`
 
-Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) must be configured in the Cloudflare Pages dashboard under **Settings > Environment variables**.
+No environment variables are required. Station data is served as a static asset (`public/stations.json`) bundled at build time, so there is no backend to configure.
 
-## Station Data Import
+## Station Data Generation
 
-Import railway station data from [National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html) into Supabase.
+Station search and nearest-station lookup run entirely in the browser against a static dataset
+(`public/stations.json`) generated from
+[National Land Numerical Information (国土数値情報)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html).
 The dataset is governed by its own terms of use — see [Third-party data](#third-party-data) for details.
+
+`public/stations.json` is committed to the repository, so a normal checkout can build and run without
+this step. Regenerate it only when updating to a newer station dataset.
 
 ### Setup
 
@@ -170,19 +128,17 @@ The dataset is governed by its own terms of use — see [Third-party data](#thir
          N02-25_Station.geojson
    ```
 
-3. Ensure `SUPABASE_SECRET_KEY` is set in `.env.local` (create a secret key in Supabase Dashboard -> Settings -> API)
-
 ### Usage
 
 ```bash
-# Dry run (parse and validate without inserting)
-npm run import:stations -- data/N02-25_GML/UTF-8/N02-25_Station.geojson --dry-run
+# Dry run (parse and report counts without writing the file)
+npm run generate:stations -- data/N02-25_GML/UTF-8/N02-25_Station.geojson --dry-run
 
-# Import into Supabase
-npm run import:stations -- data/N02-25_GML/UTF-8/N02-25_Station.geojson
+# Generate public/stations.json
+npm run generate:stations -- data/N02-25_GML/UTF-8/N02-25_Station.geojson
 ```
 
-The script is idempotent: re-running it will skip stations that already exist in the database.
+After regenerating, commit the updated `public/stations.json`.
 
 ## Misc
 
