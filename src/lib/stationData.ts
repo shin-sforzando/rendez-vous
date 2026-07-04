@@ -37,14 +37,29 @@ export function resetStationCache(): void {
   cache = null
 }
 
+/** Default cap on search results so broad queries don't render thousands of rows */
+export const DEFAULT_SEARCH_LIMIT = 50
+
 /**
- * Filter stations whose name contains the query substring.
- * Mirrors the previous server-side `search_stations` semantics.
+ * Filter stations whose name contains the query substring, capped at `limit`.
+ * Mirrors the previous server-side `search_stations` semantics; stops scanning
+ * once `limit` matches are found so broad queries stay cheap over the full dataset.
  */
-export function searchStations(query: string, stations: StationWithCoords[]): StationWithCoords[] {
+export function searchStations(
+  query: string,
+  stations: StationWithCoords[],
+  limit = DEFAULT_SEARCH_LIMIT
+): StationWithCoords[] {
   const trimmed = query.trim()
   if (!trimmed) return []
-  return stations.filter((station) => station.name.includes(trimmed))
+  const results: StationWithCoords[] = []
+  for (const station of stations) {
+    if (station.name.includes(trimmed)) {
+      results.push(station)
+      if (results.length >= limit) break
+    }
+  }
+  return results
 }
 
 /**

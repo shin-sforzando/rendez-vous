@@ -24,7 +24,9 @@ function parsePointWkt(wkt: string): [number, number] | null {
 function printUsage() {
   console.log('Usage: npx tsx scripts/generate-stations.ts <geojson-file> [--dry-run]')
   console.log('')
-  console.log('Generate a static station dataset (public/stations.json) from 国土数値情報 GeoJSON.')
+  console.log(
+    'Generate a static station dataset (public/stations.json) from National Land Numerical Information GeoJSON.'
+  )
   console.log('')
   console.log('Options:')
   console.log('  --dry-run  Parse and report counts without writing the output file')

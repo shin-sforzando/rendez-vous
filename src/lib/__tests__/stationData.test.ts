@@ -34,6 +34,19 @@ describe('searchStations', () => {
   it('returns empty array for unmatched query', () => {
     expect(searchStations('ロンドン', STATIONS)).toEqual([])
   })
+
+  it('caps results at the given limit', () => {
+    // Several names contain 新; the cap must stop after `limit` matches in dataset order
+    const many: StationWithCoords[] = [
+      { id: 10, name: '新橋', line_name: null, operator: null, lat: 0, lng: 0 },
+      { id: 11, name: '新大阪', line_name: null, operator: null, lat: 0, lng: 0 },
+      { id: 12, name: '新神戸', line_name: null, operator: null, lat: 0, lng: 0 },
+    ]
+    const result = searchStations('新', [...STATIONS, ...many], 2)
+    expect(result).toHaveLength(2)
+    // Preserves dataset order and stops early once the cap is reached
+    expect(result.map((s) => s.name)).toEqual(['新宿', '新宿三丁目'])
+  })
 })
 
 describe('findNearbyStations', () => {
