@@ -1,6 +1,6 @@
 # CHANGELOG
 
-Last updated: 2026-06-08
+Last updated: 2026-07-04
 
 All notable changes to this project will be documented in this file.
 
@@ -37,6 +37,8 @@ All notable changes to this project will be documented in this file.
 - 2026-06-06 13:59:23 :sparkles: move CHANGELOG generation from pre-push hook to GitHub Actions _by shin-sforzando_
 - 2026-06-08 09:11:27 :sparkles: add K-medoids station selection and grouping logic _by shin-sforzando_
 - 2026-06-08 11:07:57 :sparkles: update station data _by shin-sforzando_
+- 2026-07-02 20:50:10 :sparkles: Supabase/PostGISを廃止し駅データを静的アセット化 _by shin-sforzando_
+- 2026-07-04 02:32:55 :sparkles: 駅名検索結果に上限を追加しログ出力を英語化
 
 ### Refactor
 
