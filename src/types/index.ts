@@ -16,9 +16,15 @@ export interface Location {
   latlng: LatLng
 }
 
-export type { Database, Station, StationWithCoords } from './database'
-
-import type { StationWithCoords } from './database'
+/** Station with latitude/longitude coordinates */
+export interface StationWithCoords {
+  id: number
+  name: string
+  line_name: string | null
+  operator: string | null
+  lat: number
+  lng: number
+}
 
 /** A station with its distance from a reference point */
 export interface NearbyStation extends StationWithCoords {

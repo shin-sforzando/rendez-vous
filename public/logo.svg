@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" fill="none" role="img">
+  <title>rendez-vous</title>
   <!-- Geometric median motif: points converging to center -->
   <g transform="translate(4, 4)">
     <!-- Connecting lines from outer points to center -->

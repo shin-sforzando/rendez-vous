@@ -12,7 +12,6 @@ function setMockStationSearch(overrides: Record<string, unknown> = {}) {
     stations: [],
     isLoading: false,
     error: null,
-    isUsingMockData: false,
     ...overrides,
   })
 }
@@ -247,15 +246,6 @@ describe('LocationForm', () => {
       render(<LocationForm onAdd={onAdd} />)
 
       expect(screen.getByText('検索エラー: 接続エラー')).toBeInTheDocument()
-    })
-
-    it('should show mock data warning', () => {
-      setMockStationSearch({ isUsingMockData: true })
-      render(<LocationForm onAdd={onAdd} />)
-
-      expect(
-        screen.getByText('Supabase未設定のため、サンプルデータを使用しています')
-      ).toBeInTheDocument()
     })
   })
 

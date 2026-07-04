@@ -1,6 +1,11 @@
-import type { Database } from '../../src/types/database.ts'
-
-type StationInsert = Database['public']['Tables']['stations']['Insert']
+/** Parsed station record with a PostGIS-style WKT location string */
+export interface RawStation {
+  name: string
+  line_name: string | null
+  operator: string | null
+  /** WKT POINT, e.g. "POINT(139.7671 35.6812)" */
+  location: string
+}
 
 /** GeoJSON Feature with properties from 国土数値情報 railway dataset */
 interface RailwayFeature {
@@ -94,8 +99,8 @@ function extractCoordinates(geometry: RailwayFeature['geometry']): [number, numb
  * Supports Point and LineString geometries (LineString uses centroid).
  * Filters for features with a valid station name (N02_005).
  */
-export function extractStations(geojson: RailwayFeatureCollection): StationInsert[] {
-  const stations: StationInsert[] = []
+export function extractStations(geojson: RailwayFeatureCollection): RawStation[] {
+  const stations: RawStation[] = []
 
   for (const feature of geojson.features) {
     const name = feature.properties?.N02_005
@@ -126,9 +131,9 @@ export function extractStations(geojson: RailwayFeatureCollection): StationInser
  * Remove duplicate stations based on name + line_name composite key.
  * Stations with the same name on different lines are preserved.
  */
-export function deduplicateStations(stations: StationInsert[]): StationInsert[] {
+export function deduplicateStations(stations: RawStation[]): RawStation[] {
   const seen = new Set<string>()
-  const result: StationInsert[] = []
+  const result: RawStation[] = []
 
   for (const station of stations) {
     const key = `${station.name}::${station.line_name ?? ''}`

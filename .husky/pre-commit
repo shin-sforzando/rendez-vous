@@ -4,42 +4,35 @@ set -e
 
 echo "🔐 Running pre-commit checks..."
 
-# 1. git-secret: Automatic encryption of secret files
-if command -v git-secret &> /dev/null; then
-  echo "🔒 Encrypting secrets with git-secret..."
-
-  # Check for changes in secret files
-  changed_secrets=$(git secret list 2>/dev/null | xargs -I {} sh -c 'git diff --cached --name-only | grep -x {} || true')
-
-  if [ -n "$changed_secrets" ]; then
-    echo "  ↳ Detected changes in secret files: $changed_secrets"
-    git secret hide -m
-
-    # Automatically stage encrypted files
-    for file in $(git secret list 2>/dev/null); do
-      if [ -f "${file}.secret" ]; then
-        git add "${file}.secret"
-        echo "  ✓ Added ${file}.secret to staging"
-      fi
-    done
-  else
-    echo "  ✓ No secret files changed"
-  fi
-else
-  echo "  ⚠️  git-secret not found, skipping encryption"
+# 1. Biome: format + lint, then re-stage any auto-fixes on already-staged files.
+# Whole-tree `npm run check` honors the project's script convention; re-adding only
+# the originally-staged files keeps unrelated working-tree edits out of the commit.
+echo "🎨 Running Biome (format + lint)..."
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+if ! npm run check; then
+  echo "❌ Biome reported unfixable problems. Please resolve them and try again."
+  exit 1
+fi
+if [ -n "$staged" ]; then
+  echo "$staged" | xargs -r git add
 fi
 
-# 2. Tests (if test script exists)
-# pretest hook automatically runs Biome checks
-echo "🧪 Running tests (with pretest checks)..."
+# 2. TypeScript type check (vite build does not type-check on its own)
+echo "🔎 Running TypeScript type check..."
+if ! npm run typecheck; then
+  echo "❌ Type check failed. Please fix the errors and try again."
+  exit 1
+fi
+
+# 3. Tests (pretest re-runs Biome check; fast and idempotent after step 1)
+echo "🧪 Running tests..."
 if ! npm run test --if-present; then
   echo "❌ Tests failed. Please fix the tests and try again."
   exit 1
 fi
 
-# 3. Build verification (if build script exists)
-# prebuild hook automatically runs Biome checks and TypeScript type check
-echo "🏗️  Running build verification (with prebuild checks)..."
+# 4. Build verification
+echo "🏗️  Running build verification..."
 if ! npm run build --if-present; then
   echo "❌ Build failed. Please fix the errors and try again."
   exit 1

@@ -50,7 +50,6 @@ function setMockStationSearch(overrides: Record<string, unknown> = {}) {
     stations: [],
     isLoading: false,
     error: null,
-    isUsingMockData: false,
     ...overrides,
   })
 }
@@ -60,7 +59,6 @@ function setMockNearbyStations(overrides: Record<string, unknown> = {}) {
     stations: [],
     isLoading: false,
     error: null,
-    isUsingMockData: false,
     ...overrides,
   })
 }
